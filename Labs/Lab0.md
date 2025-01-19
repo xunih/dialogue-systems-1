@@ -1,6 +1,7 @@
 # Part 1. JavaScript and TypeScript: exercises to get started
 
-These exercises can be done in your browser. If you feel courageous
+These exercises can be done in your browser. You can also try: https://www.typescriptlang.org/ (TS Config > Lang > JavaScript).
+If you feel courageous
 enough, you can start with Part 2 and get tooling to work and then
 return to Part 1 to solve exercises in your text editor.
 
@@ -106,7 +107,7 @@ This one explains why types are useful in JavaScript: https://www.typescriptlang
 
 And this one some basics on the syntax: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html
 
-For this exercise, add types for each of the 6 exercises you have completed. Your file needs to be a TypeScript (.ts) one, instead of a JavaScript one (.js). Submit the TypeScript file.
+For this exercise, add types for each of the 6 exercises you have completed. Your file needs to be a TypeScript (.ts) one, instead of a JavaScript one (.js). Submit the TypeScript file after following Part 2.
 
 
 
@@ -123,7 +124,7 @@ For this exercise, add types for each of the 6 exercises you have completed. You
     
     -   specify the arbitrary but meaningful name
     -   select Vanilla framework
-    -   select JavaScript variant
+    -   select TypeScript variant
     -   follow the further instructions
 4.  You will see the link to the development instance,
     i.e. <http://localhost:5173/>. Open it. You should see the &ldquo;Hello
