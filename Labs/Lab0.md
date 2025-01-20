@@ -1,8 +1,8 @@
 # Part 1. JavaScript: exercises to get started
 
-These exercises can be done in your browser. You can also try: https://www.typescriptlang.org/ (TS Config > Lang > JavaScript).
-If you feel courageous
-enough, you can start with Part 2 and get tooling to work and then
+These exercises can be done in your browser. 
+You can also try: https://www.typescriptlang.org/ (TS Config > Lang > JavaScript).
+Alternatively, you can start with Part 2 and get tooling to work and then
 return to Part 1 to solve exercises in your text editor.
 
 Try reading all exercises before starting. You can also take a
@@ -16,7 +16,7 @@ skim-read these first:
 - https://javascript.info/function-basics
 - https://javascript.info/object
 
-Also, feel free to message us on Discord.
+Also, feel free to message us on Discord or send an email.
 
 *Most exercises were taken from this source, feel free to practice
 with more of these if you feel like it:
@@ -41,8 +41,8 @@ https://www.w3resource.com/javascript-exercises/javascript-basic-exercise-8.php
 Write a function to check a pair of numbers and return true if one of
 the numbers is 50 or if their sum is 50.
 
-(advanced) What happens if one or both of the numbers is provided as string? What
-is the possible solution to this?
+What happens if one or both of the numbers are provided as string? What
+is a possible solution to this?
 
 ## Exercise 3: finding string
 In an array of names `const names = ["Anna", "Johannes", "Paula",
@@ -66,16 +66,19 @@ For example:
 - `addThree(umbrella) // -> llaumbrellalla`
 - `addThree(cap) // -> capcapcap`
 
+Check: 
+https://javascript.info/ifelse
 One solution:
 https://www.w3resource.com/javascript-exercises/javascript-basic-exercise-26.php
-Maybe also check: https://javascript.info/ifelse
+
 
 ## Exercise 5: looping
 Write a program that returns an array of strings (const) consisting of
 every name in `names` (from Exercise 3) and their respective length
 multiplied by two: `["Anna 8", "Johannes 16" ...]`
 
-Take a careful look at this!: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
+Check: 
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
 
 ## Exercise 6: objects
 Create the following object: 
@@ -92,7 +95,7 @@ Create the following object:
 - How would you check if an animal with a specific weight or a
   specific origin exists in the object?
 - How would you add a new animal?
-- (advanced) Create an object method named "about" which generates
+- Create an object method named "about" which generates
   text about specified animal, e.g. `zooAnimals.about("giraffe") // ->
   "giraffe weights 910 kg and comes from Tanzania"`. If the animal is
   not in the zoo, return "we don't have this animal".
@@ -132,7 +135,8 @@ This one explains why types are useful in JavaScript: https://www.typescriptlang
 
 And this one some basics on the syntax: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html
 
-For this exercise, add types for each of the 6 exercises of Part 1 you have completed. Your file needs to be a TypeScript (.ts) one, instead of a JavaScript one (.js). Submit the TypeScript file after following Part 2.
+For this exercise, add types for each of the 6 exercises of Part 1 you have completed. 
+Your file needs to be a TypeScript (.ts) one, instead of a JavaScript one (.js). Submit a TypeScript file named "Exercises.ts" after following Part 2.
 
 
       
@@ -157,7 +161,7 @@ Resources:
 1. https://stately.ai/docs/xstate
 2. https://stately.ai/docs/actors#actor-snapshots
 
-# Part 4. (optional) HTML exercises
+# Part 4. HTML exercises (extra point)
 
 Create an interface in HTML for Exercise 1. Replace `alert()` (or
 `console.log()`) and `prompt()` with appropriate HTML elements. You
