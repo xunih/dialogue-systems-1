@@ -146,7 +146,7 @@ Your file needs to be a TypeScript (.ts) one, instead of a JavaScript one (.js).
         yarn add xstate
      
 2. Follow this documentation: https://stately.ai/docs/xstate and
-   move the program logic in `counter.js` to a state chart:
+   move the program logic in `counter.ts` to a state chart:
    - Information about the counter is stored in the **context** of
      your state chart.
    - **Event** `INC` updates the counter. Clicking on the button should
