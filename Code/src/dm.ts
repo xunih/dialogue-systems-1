@@ -69,6 +69,8 @@ const dmMachine = setup({
   context: ({ spawn }) => ({
     spstRef: spawn(speechstate, { input: settings }),
     lastResult: null,
+    person: null,
+    date: null,
   }),
   id: "DM",
   initial: "Prepare",
@@ -85,7 +87,7 @@ const dmMachine = setup({
       on: {
         LISTEN_COMPLETE: [
           {
-            target: "CheckGrammar",
+            target: "AskForDate",
             guard: ({ context }) => !!context.lastResult,
           },
           { target: ".NoInput" },
@@ -93,7 +95,59 @@ const dmMachine = setup({
       },
       states: {
         Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `Hello world!` } },
+          entry: { type: "spst.speak", params: { utterance: `Let's create an appointment!` } },
+          on: { SPEAK_COMPLETE: "AskForPerson" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't hear you!` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        AskForPerson: {
+          entry: { type: "spst.speak", params: { utterance: `Who are you meeting with?` } },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { lastResult: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ lastResult: null }),
+            },
+          },
+        },
+      },
+    },
+    AskForDate: {
+      /*
+      entry: {
+        type: "spst.speak",
+        params: ({ context }) => ({
+          utterance: `You just said: ${context.lastResult![0].utterance}. And it ${
+            isInGrammar(context.lastResult![0].utterance) ? "is" : "is not"
+          } in the grammar.`,
+        }),
+      },
+      on: { SPEAK_COMPLETE: "Done" },*/
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "IfWholeDay",
+            guard: ({ context }) => !!context.lastResult,
+          },
+          { target: ".NoInput" },
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: { type: "spst.speak", params: { utterance: `On which day is your meeting?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         NoInput: {
@@ -118,17 +172,53 @@ const dmMachine = setup({
         },
       },
     },
-    CheckGrammar: {
-      entry: {
-        type: "spst.speak",
-        params: ({ context }) => ({
-          utterance: `You just said: ${context.lastResult![0].utterance}. And it ${
-            isInGrammar(context.lastResult![0].utterance) ? "is" : "is not"
-          } in the grammar.`,
-        }),
+    IfWholeDay: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "AskForTime",
+            guard: ({ context }) =>
+              context.lastResult![0].utterance.toLowerCase().includes("no"),
+
+          },
+          {
+            target: "NoTimeProvided",
+            guard: ({ context }) =>
+              context.lastResult![0].utterance.toLowerCase().includes("yes"),
+          },
+          { target: ".NoInput" },
+        ],
       },
-      on: { SPEAK_COMPLETE: "Done" },
+      states: {
+        Prompt: {
+          entry: { type: "spst.speak", params: { utterance: `On which day is your meeting?` } },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't hear you!` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { lastResult: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ lastResult: null }),
+            },
+          },
+        },
+      },
     },
+    AskForTime: {},
+    NoTimeProvided: {},
     Done: {
       on: {
         CLICK: "Greeting",
