@@ -70,7 +70,7 @@ const dmMachine = setup({
     spstRef: spawn(speechstate, { input: settings }),
     lastResult: null,
     greetingFromUser: null,
-    person: null,
+    name: null,
     date: null,
     time: null,
     ifWholeDay: null,
@@ -120,7 +120,7 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "AskForDate",
-            guard: ({ context }) => !!context.person,
+            guard: ({ context }) => !!context.name,
           },
           { target: ".NoInput" },
         ],
@@ -146,11 +146,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { person: event.value };
+                return { name: event.value };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ person: null }),
+              actions: assign({ name: null }),
             },
           },
         },
@@ -309,7 +309,7 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: ({ context }) => ({
-              utterance: `Do you want me to create an appointment with ${context.person![0].utterance}
+              utterance: `Do you want me to create an appointment with ${context.name![0].utterance}
               on ${context.date![0].utterance}`,
             }),
           },
@@ -359,7 +359,7 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: ({ context }) => ({
-              utterance: `Do you want me to create an appointment with ${context.person![0].utterance}
+              utterance: `Do you want me to create an appointment with ${context.name![0].utterance}
               on ${context.date![0].utterance} at ${context.time![0].utterance}`,
             }),
           },

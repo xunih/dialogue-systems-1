@@ -5,7 +5,7 @@ export interface DMContext {
   spstRef: AnyActorRef;
   lastResult: Hypothesis[] | null;
   greetingFromUser: Hypothesis[] | null;
-  person: Hypothesis[] | null;
+  name: Hypothesis[] | null;
   date: Hypothesis[] | null;
   ifWholeDay: Hypothesis[] | null;
   time: Hypothesis[] | null;
