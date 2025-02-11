@@ -182,13 +182,13 @@ const dmMachine = setup({
           {
             target: "AskForTime",
             guard: ({ context }) =>
-              context.ifWholeDay![0].utterance.toLowerCase().includes("no"),
+              !!context.ifWholeDay && context.ifWholeDay![0].utterance.toLowerCase().includes("no"),
 
           },
           {
             target: "NoTimeProvided",
             guard: ({ context }) =>
-              context.ifWholeDay![0].utterance.toLowerCase().includes("yes"),
+              !!context.ifWholeDay && context.ifWholeDay![0].utterance.toLowerCase().includes("yes"),
           },
           { target: ".NoInput" },
         ],
@@ -265,12 +265,12 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
+              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
           },
           {
             target: "Greeting.AskForPerson",
             guard: ({ context }) =>
-              context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
+              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
           },
           { target: ".NoInput" },
         ],
@@ -315,12 +315,12 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
+              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
           },
           {
             target: "Greeting.AskForPerson",
             guard: ({ context }) =>
-              context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
+              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
           },
           { target: ".NoInput" },
         ],
