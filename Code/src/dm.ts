@@ -71,6 +71,9 @@ const dmMachine = setup({
     lastResult: null,
     person: null,
     date: null,
+    time: null,
+    ifWholeDay: null,
+    ifCreateAppointment: null,
   }),
   id: "DM",
   initial: "Prepare",
@@ -88,7 +91,7 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "AskForDate",
-            guard: ({ context }) => !!context.lastResult,
+            guard: ({ context }) => !!context.person,
           },
           { target: ".NoInput" },
         ],
@@ -101,7 +104,7 @@ const dmMachine = setup({
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I can't hear you!` },
+            params: { utterance: `I can't hear you! Who are you meeting with?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -114,11 +117,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { lastResult: event.value };
+                return { person: event.value };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ lastResult: null }),
+              actions: assign({ person: null }),
             },
           },
         },
@@ -140,7 +143,7 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "IfWholeDay",
-            guard: ({ context }) => !!context.lastResult,
+            guard: ({ context }) => !!context.date,
           },
           { target: ".NoInput" },
         ],
@@ -153,7 +156,7 @@ const dmMachine = setup({
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I can't hear you!` },
+            params: { utterance: `I can't hear you! On which day is your meeting?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -162,11 +165,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { lastResult: event.value };
+                return { date: event.value };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ lastResult: null }),
+              actions: assign({ date: null }),
             },
           },
         },
@@ -179,26 +182,26 @@ const dmMachine = setup({
           {
             target: "AskForTime",
             guard: ({ context }) =>
-              context.lastResult![0].utterance.toLowerCase().includes("no"),
+              context.ifWholeDay![0].utterance.toLowerCase().includes("no"),
 
           },
           {
             target: "NoTimeProvided",
             guard: ({ context }) =>
-              context.lastResult![0].utterance.toLowerCase().includes("yes"),
+              context.ifWholeDay![0].utterance.toLowerCase().includes("yes"),
           },
           { target: ".NoInput" },
         ],
       },
       states: {
         Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `On which day is your meeting?` } },
+          entry: { type: "spst.speak", params: { utterance: `Will it take the whole day?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I can't hear you!` },
+            params: { utterance: `I can't hear you! Will it take the whole day?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -207,18 +210,161 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { lastResult: event.value };
+                return { ifWholeDay: event.value };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ lastResult: null }),
+              actions: assign({ ifWholeDay: null }),
             },
           },
         },
       },
     },
-    AskForTime: {},
-    NoTimeProvided: {},
+    AskForTime: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "WithATime",
+            guard: ({ context }) => !!context.time,
+          },
+          { target: ".NoInput" },
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: { type: "spst.speak", params: { utterance: `What time is your meeting?` } },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't hear you! What time is your meeting?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { time: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ time: null }),
+            },
+          },
+        },
+      },
+    },
+    NoTimeProvided: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "AppointmentBooked",
+            guard: ({ context }) =>
+              context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
+          },
+          {
+            target: "Greeting.AskForPerson",
+            guard: ({ context }) =>
+              context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
+          },
+          { target: ".NoInput" },
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: {
+            type: "spst.speak",
+            params: ({ context }) => ({
+              utterance: `Do you want me to create an appointment with ${context.person![0].utterance}
+              on ${context.date![0].utterance}`,
+            }),
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't hear you! Could you say again?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { ifCreateAppointment: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ ifCreateAppointment: null }),
+            },
+          },
+        },
+      },
+    },
+    WithATime: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "AppointmentBooked",
+            guard: ({ context }) =>
+              context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
+          },
+          {
+            target: "Greeting.AskForPerson",
+            guard: ({ context }) =>
+              context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
+          },
+          { target: ".NoInput" },
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: {
+            type: "spst.speak",
+            params: ({ context }) => ({
+              utterance: `Do you want me to create an appointment with ${context.person![0].utterance}
+              on ${context.date![0].utterance} at ${context.time![0].utterance}`,
+            }),
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't hear you! Could you say again?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { ifCreateAppointment: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ ifCreateAppointment: null }),
+            },
+          },
+        },
+      },
+    },
+    AppointmentBooked: {
+      entry: {
+        type: "spst.speak",
+        params: { utterance: `You appointment has been created!` },
+      },
+      on: { SPEAK_COMPLETE: "Done" },
+    },
     Done: {
       on: {
         CLICK: "Greeting",
