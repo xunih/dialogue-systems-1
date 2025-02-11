@@ -69,6 +69,7 @@ const dmMachine = setup({
   context: ({ spawn }) => ({
     spstRef: spawn(speechstate, { input: settings }),
     lastResult: null,
+    greetingFromUser: null,
     person: null,
     date: null,
     time: null,
@@ -83,7 +84,35 @@ const dmMachine = setup({
       on: { ASRTTS_READY: "WaitToStart" },
     },
     WaitToStart: {
-      on: { CLICK: "Greeting" },
+      on: { CLICK: "GreetingFromUser" },
+    },
+    GreetingFromUser: {
+      initial: "Ask",
+      entry: { type: "spst.listen" },
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "Greeting",
+            guard: ({ context }) => !!context.greetingFromUser,
+          },
+        ],
+      },
+      states: {
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { greetingFromUser: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ greetingFromUser: null }),
+            },
+          },
+        },
+      },
+
     },
     Greeting: {
       initial: "Prompt",
