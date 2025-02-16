@@ -3,6 +3,7 @@ import { Settings, speechstate } from "speechstate";
 import { createBrowserInspector } from "@statelyai/inspect";
 import { KEY } from "./azure";
 import { DMContext, DMEvents } from "./types";
+import { snapshot } from "node:test";
 
 const inspector = createBrowserInspector();
 
@@ -23,8 +24,9 @@ const settings: Settings = {
 
 interface GrammarEntry {
   person?: string;
-  day?: string;
+  //day?: string;
   time?: string;
+  week?: string[];
   yes?: string[];
   no?: string[];
 }
@@ -33,8 +35,9 @@ const grammar: { [index: string]: GrammarEntry } = {
   vlad: { person: "Vladislav Maraev" },
   aya: { person: "Nayat Astaiza Soriano" },
   victoria: { person: "Victoria Daniilidou" },
-  monday: { day: "Monday" },
-  tuesday: { day: "Tuesday" },
+  week: { week: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+  //monday: { day: "Monday" },
+  //tuesday: { day: "Tuesday" },
   "10": { time: "10:00" },
   "11": { time: "11:00" },
   yes: { yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely"] },
@@ -45,7 +48,7 @@ function isInGrammar(utterance: string) {
   return utterance.toLowerCase() in grammar;
 }
 
-function ifInputIsYesOrNo(utterance: string): string | null {
+function isInputYesOrNo(utterance: string): string | null {
   if (grammar.yes.yes?.includes(utterance.toLowerCase())) {
     return "yes"
   }
@@ -54,6 +57,19 @@ function ifInputIsYesOrNo(utterance: string): string | null {
   }
   return "invalid"
 }
+
+function isDateValid(utterance: string): boolean {
+  utterance = utterance.replace(/(\d+)(st|nd|rd|th)/, '$1');
+  const normalisedUtterance = utterance.replace(/(\d+)\s*of\s*(\w+)/, '$2 $1');
+  var date = new Date(normalisedUtterance)
+  var ifDateValid = !isNaN(date.getTime())
+  var isWeekDay = grammar.week.week?.includes(utterance.toLowerCase())
+  if ( ifDateValid|| isWeekDay) {
+    return true
+  }
+  return false
+}
+
 
 function getPerson(utterance: string) {
   return (grammar[utterance.toLowerCase()] || {}).person;
@@ -186,7 +202,11 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "IfWholeDay",
-            guard: ({ context }) => !!context.date,
+            guard: ({ context }) => !!context.date && isDateValid(context.date![0].utterance)
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) => !!context.date && !isDateValid(context.date![0].utterance)
           },
           { target: ".NoInput" },
         ],
@@ -200,6 +220,13 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: { utterance: `I can't hear you! On which day is your meeting?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `It's not a valid day. On which day is your meeting?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -225,19 +252,19 @@ const dmMachine = setup({
           {
             target: "AskForTime",
             guard: ({ context }) =>
-              !!context.ifWholeDay && ifInputIsYesOrNo(context.ifWholeDay![0].utterance) === "no",
+              !!context.ifWholeDay && isInputYesOrNo(context.ifWholeDay![0].utterance) === "no",
 
           },
           {
             target: "NoTimeProvided",
             guard: ({ context }) =>
-              !!context.ifWholeDay && ifInputIsYesOrNo(context.ifWholeDay![0].utterance) === "yes",
+              !!context.ifWholeDay && isInputYesOrNo(context.ifWholeDay![0].utterance) === "yes",
 
           },
           {
             target: ".InvalidInput",
             guard: ({ context }) =>
-              !!context.ifWholeDay && ifInputIsYesOrNo(context.ifWholeDay![0].utterance) === "invalid",
+              !!context.ifWholeDay && isInputYesOrNo(context.ifWholeDay![0].utterance) === "invalid",
           },
           { target: ".NoInput" },
         ],
@@ -321,17 +348,17 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
+              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
           },
           {
             target: "Greeting.AskForPerson",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
+              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
           },
           {
             target: ".InvalidInput",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
+              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
           },
           { target: ".NoInput" },
         ],
@@ -386,17 +413,17 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
+              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
           },
           {
             target: "Greeting.AskForPerson",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
+              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
           },
           {
             target: ".InvalidInput",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
+              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
           },
           { target: ".NoInput" },
         ],
