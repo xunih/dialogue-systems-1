@@ -35,7 +35,7 @@ const grammar: { [index: string]: GrammarEntry } = {
   vlad: { person: "Vladislav Maraev" },
   aya: { person: "Nayat Astaiza Soriano" },
   victoria: { person: "Victoria Daniilidou" },
-  week: { week: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+  week: { week: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "today", "tomorrow"] },
   //monday: { day: "Monday" },
   //tuesday: { day: "Tuesday" },
   "10": { time: "10:00" },
@@ -50,25 +50,47 @@ function isInGrammar(utterance: string) {
 
 function isInputYesOrNo(utterance: string): string | null {
   if (grammar.yes.yes?.includes(utterance.toLowerCase())) {
-    return "yes"
+    return "yes";
   }
   else if (grammar.no.no?.includes(utterance.toLowerCase())) {
-    return "no"
+    return "no";
   }
-  return "invalid"
+  return "invalid";
 }
 
 function isDateValid(utterance: string): boolean {
   utterance = utterance.replace(/(\d+)(st|nd|rd|th)/, '$1');
   const normalisedUtterance = utterance.replace(/(\d+)\s*of\s*(\w+)/, '$2 $1');
-  var date = new Date(normalisedUtterance)
-  var ifDateValid = !isNaN(date.getTime())
-  var isWeekDay = grammar.week.week?.includes(utterance.toLowerCase())
-  if ( ifDateValid|| isWeekDay) {
-    return true
+  var date = new Date(normalisedUtterance);
+  var ifDateValid = !isNaN(date.getTime());
+  var isWeekDay = grammar.week.week?.includes(utterance.toLowerCase());
+  if (ifDateValid || isWeekDay) {
+    return true;
   }
-  return false
+  return false;
 }
+
+function isTimeValid(utterance: string): boolean {
+  var isTimeValid = false;
+  var hr;
+  var min;
+  console.log(utterance)
+  if (utterance.includes(":")) {
+    isTimeValid = true
+  } else if (utterance.length === 4) {
+    hr = Number(utterance.slice(0, 2));
+    min = Number(utterance.slice(-2));
+    if (hr < 24 && min < 60) {
+      isTimeValid = true;
+    }
+  }
+  else if (utterance.length === 1 || utterance.length === 2) {
+    if (0 < Number(utterance) && Number(utterance) < 24) {
+      isTimeValid = true;
+    }
+  }
+  return isTimeValid
+};
 
 
 function getPerson(utterance: string) {
@@ -309,7 +331,11 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "WithATime",
-            guard: ({ context }) => !!context.time,
+            guard: ({ context }) => !!context.time && isTimeValid(context.time![0].utterance)
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) => !!context.time && !isTimeValid(context.time![0].utterance)
           },
           { target: ".NoInput" },
         ],
@@ -323,6 +349,13 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: { utterance: `I can't hear you! What time is your meeting?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `It's not a valid time. What time is your meeting?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
