@@ -40,8 +40,10 @@ const grammar: { [index: string]: GrammarEntry } = {
   //tuesday: { day: "Tuesday" },
   "10": { time: "10:00" },
   "11": { time: "11:00" },
-  yes: { yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely"] },
-  no: { no: ["no", "nah", "nope", "no way", "not at all", "uh-uh"] },
+  yesOrNo: {
+    yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely"],
+    no: ["no", "nah", "nope", "no way", "not at all", "uh-uh"]
+  },
 };
 
 function isInGrammar(utterance: string) {
@@ -49,10 +51,10 @@ function isInGrammar(utterance: string) {
 }
 
 function isInputYesOrNo(utterance: string): string | null {
-  if (grammar.yes.yes?.includes(utterance.toLowerCase())) {
+  if (grammar.yesOrNo.yes?.includes(utterance.toLowerCase())) {
     return "yes";
   }
-  else if (grammar.no.no?.includes(utterance.toLowerCase())) {
+  else if (grammar.yesOrNo.no?.includes(utterance.toLowerCase())) {
     return "no";
   }
   return "invalid";
@@ -155,7 +157,7 @@ const dmMachine = setup({
             guard: ({ context }) => !!context.greetingFromUser,
           },
           {
-            target:"Prepare"
+            target: "Prepare"
           }
         ],
       },
