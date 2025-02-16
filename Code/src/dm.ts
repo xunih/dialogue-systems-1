@@ -25,6 +25,8 @@ interface GrammarEntry {
   person?: string;
   day?: string;
   time?: string;
+  yes?: string[];
+  no?: string[];
 }
 
 const grammar: { [index: string]: GrammarEntry } = {
@@ -35,10 +37,22 @@ const grammar: { [index: string]: GrammarEntry } = {
   tuesday: { day: "Tuesday" },
   "10": { time: "10:00" },
   "11": { time: "11:00" },
+  yes: { yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely"] },
+  no: { no: ["no", "nah", "nope", "no way", "not at all", "uh-uh"] },
 };
 
 function isInGrammar(utterance: string) {
   return utterance.toLowerCase() in grammar;
+}
+
+function ifInputIsYesOrNo(utterance: string): string | null {
+  if (grammar.yes.yes?.includes(utterance.toLowerCase())) {
+    return "yes"
+  }
+  else if (grammar.no.no?.includes(utterance.toLowerCase())) {
+    return "no"
+  }
+  return "invalid"
 }
 
 function getPerson(utterance: string) {
@@ -211,13 +225,19 @@ const dmMachine = setup({
           {
             target: "AskForTime",
             guard: ({ context }) =>
-              !!context.ifWholeDay && context.ifWholeDay![0].utterance.toLowerCase().includes("no"),
+              !!context.ifWholeDay && ifInputIsYesOrNo(context.ifWholeDay![0].utterance) === "no",
 
           },
           {
             target: "NoTimeProvided",
             guard: ({ context }) =>
-              !!context.ifWholeDay && context.ifWholeDay![0].utterance.toLowerCase().includes("yes"),
+              !!context.ifWholeDay && ifInputIsYesOrNo(context.ifWholeDay![0].utterance) === "yes",
+
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) =>
+              !!context.ifWholeDay && ifInputIsYesOrNo(context.ifWholeDay![0].utterance) === "invalid",
           },
           { target: ".NoInput" },
         ],
@@ -231,6 +251,13 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: { utterance: `I can't hear you! Will it take the whole day?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't understand. Will it take the whole day?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -294,12 +321,17 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
+              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
           },
           {
             target: "Greeting.AskForPerson",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
+              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) =>
+              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
           },
           { target: ".NoInput" },
         ],
@@ -319,6 +351,16 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: { utterance: `I can't hear you! Could you say again?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: ({ context }) => ({
+              utterance: `Do you want me to create an appointment with ${context.name![0].utterance}
+              on ${context.date![0].utterance}`,
+            }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -344,12 +386,17 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("yes"),
+              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
           },
           {
             target: "Greeting.AskForPerson",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && context.ifCreateAppointment![0].utterance.toLowerCase().includes("no"),
+              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) =>
+              !!context.ifCreateAppointment && ifInputIsYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
           },
           { target: ".NoInput" },
         ],
@@ -368,7 +415,20 @@ const dmMachine = setup({
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I can't hear you! Could you say again?` },
+            params: ({ context }) => ({
+              utterance: `I can't hear youƒ. Do you want me to create an appointment with ${context.name![0].utterance}
+              on ${context.date![0].utterance} at ${context.time![0].utterance}`,
+            }),
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: ({ context }) => ({
+              utterance: `I can't understand. Do you want me to create an appointment with ${context.name![0].utterance}
+              on ${context.date![0].utterance} at ${context.time![0].utterance}`,
+            }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
