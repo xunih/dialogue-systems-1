@@ -25,6 +25,7 @@ const settings: Settings = {
 interface GrammarEntry {
   person?: string;
   //day?: string;
+  names?: string[];
   time?: string;
   week?: string[];
   yes?: string[];
@@ -35,6 +36,22 @@ const grammar: { [index: string]: GrammarEntry } = {
   vlad: { person: "Vladislav Maraev" },
   aya: { person: "Nayat Astaiza Soriano" },
   victoria: { person: "Victoria Daniilidou" },
+  names: {
+    names: [
+      "john", "jane", "michael", "emily", "liam", "olivia", "noah", "emma", "james", "sophia",
+      "william", "isabella", "benjamin", "mia", "lucas", "charlotte", "henry", "amelia",
+      "alexander", "harper", "daniel", "evelyn", "matthew", "abigail", "joseph", "ella",
+      "samuel", "avery", "david", "scarlett", "carter", "grace", "owen", "chloe",
+      "wyatt", "victoria", "jack", "riley", "luke", "aria", "gabriel", "lily",
+      "ethan", "hannah", "mason", "zoe", "logan", "nora", "elijah", "lillian",
+      "jacob", "hazel", "aiden", "ellie", "sebastian", "lucy", "caleb", "madeline",
+      "nathan", "aurora", "dylan", "savannah", "isaac", "penelope", "julian", "stella",
+      "eli", "violet", "hunter", "bella", "anthony", "layla", "leo", "brooklyn",
+      "thomas", "addison", "hudson", "natalie", "charles", "leah", "ezra", "skylar",
+      "christopher", "autumn", "joshua", "paisley", "nicholas", "everly", "andrew", "maya",
+      "ryan", "willow", "jaxon", "samantha", "aaron", "nova", "adam", "ariana"
+    ]
+  },
   week: { week: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "today", "tomorrow"] },
   //monday: { day: "Monday" },
   //tuesday: { day: "Tuesday" },
@@ -48,6 +65,16 @@ const grammar: { [index: string]: GrammarEntry } = {
 
 function isInGrammar(utterance: string) {
   return utterance.toLowerCase() in grammar;
+}
+
+function isNameValid(utterance: string): boolean {
+  console.log(utterance)
+  console.log(grammar.names.names)
+  if (grammar.names.names?.includes(utterance.toLowerCase())) {
+    console.log("heyhye")
+    return true;
+  }
+  return false;
 }
 
 function isInputYesOrNo(utterance: string): string | null {
@@ -168,7 +195,11 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "AskForDate",
-            guard: ({ context }) => !!context.name,
+            guard: ({ context }) => !!context.name && isNameValid(context.name![0].utterance),
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) => !!context.name && !isNameValid(context.name![0].utterance),
           },
           { target: ".NoInput" },
         ],
@@ -177,6 +208,13 @@ const dmMachine = setup({
         Prompt: {
           entry: { type: "spst.speak", params: { utterance: `Let's create an appointment!` } },
           on: { SPEAK_COMPLETE: "AskForPerson" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `The name you said is not valid. Could you say again?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
         },
         NoInput: {
           entry: {
