@@ -51,7 +51,8 @@ const grammar: { [index: string]: GrammarEntry } = {
       "eli", "violet", "hunter", "bella", "anthony", "layla", "leo", "brooklyn",
       "thomas", "addison", "hudson", "natalie", "charles", "leah", "ezra", "skylar",
       "christopher", "autumn", "joshua", "paisley", "nicholas", "everly", "andrew", "maya",
-      "ryan", "willow", "jaxon", "samantha", "aaron", "nova", "adam", "ariana"
+      "ryan", "willow", "jaxon", "samantha", "aaron", "nova", "adam", "ariana", "alex",
+      "vlad", "nayat", "victoria", "staffan"
     ]
   },
   // Store days including weekday, weekend, today, and tomorrow
@@ -93,6 +94,8 @@ function isInputYesOrNo(utterance: string): string | null {
 
 // Function to check if the provided date is in the grammar or if it's a valid date
 function isDateValid(utterance: string): boolean {
+  // check if the provided day is in the grammar
+  var isWeekDay = grammar.week.week?.includes(utterance.toLowerCase());
   // use regex to remove date ordinals (st, nd, rd, th)
   utterance = utterance.replace(/(\d+)(st|nd|rd|th)/, '$1');
   // format the date into the form of "Month Day", eg., March 15
@@ -101,8 +104,15 @@ function isDateValid(utterance: string): boolean {
   var date = new Date(normalisedUtterance);
   // check if it's a valid date
   var ifDateValid = !isNaN(date.getTime());
-  // check if the provided day is in the grammar
-  var isWeekDay = grammar.week.week?.includes(utterance.toLowerCase());
+  // handle date like March 32, 
+  // becuse it can automatically convert it to a valid date Mrach 1 when creating the date object
+  const parsedDay = date.getDate();
+  // compare the day in the user input and the parsed day corrected when creating the date object
+  // if it's not the same, return false
+  var day = Number(normalisedUtterance.split(" ")[1])
+  if (parsedDay !== day && !isWeekDay) {
+    return false;
+  }
   // if it's a valid date or the day is in the grammar return true
   if (ifDateValid || isWeekDay) {
     return true;
