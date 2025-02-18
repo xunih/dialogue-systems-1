@@ -1,1 +1,7 @@
-# dialogue-systems-1-2025
+# dialogue-systems-1-2025 Lab Work
+
+### How does the system works: 
+1. Click the button and the system will listen to the user;
+2. If no user speech input detected, it will go to idle again, and the user can click again;
+3. If recognise user's speech input, the system will say "Let's create an appoinment!"
+4. After an appointment is booked, users can click the button again to book another one.
