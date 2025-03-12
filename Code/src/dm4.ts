@@ -1,7 +1,7 @@
 import { assign, createActor, setup } from "xstate";
 import { Settings, speechstate } from "speechstate";
 import { createBrowserInspector } from "@statelyai/inspect";
-import { KEY } from "./azure";
+import { KEY, NLU_KEY } from "./azure";
 import { DMContext, DMEvents } from "./types";
 import { snapshot } from "node:test";
 
@@ -13,7 +13,15 @@ const azureCredentials = {
   key: KEY,
 };
 
+const azureLanguageCredentials = {
+  endpoint: "https://language-resource-672123.cognitiveservices.azure.com/language/:analyze-conversations?api-version=2024-11-15-preview" /** your Azure CLU prediction URL */,
+  key: NLU_KEY /** reference to your Azure CLU key */,
+  deploymentName: "appointment" /** your Azure CLU deployment */,
+  projectName: "appointment" /** your Azure CLU project name */,
+};
+
 const settings: Settings = {
+  azureLanguageCredentials: azureLanguageCredentials /** global activation of NLU */,
   azureCredentials: azureCredentials,
   azureRegion: "northeurope",
   asrDefaultCompleteTimeout: 0,
@@ -31,6 +39,11 @@ interface GrammarEntry {
   week?: string[];
   yes?: string[];
   no?: string[];
+}
+
+interface CelebrityEntry {
+  person?: string;
+  intro?: string;
 }
 
 const grammar: { [index: string]: GrammarEntry } = {
@@ -70,6 +83,30 @@ const grammar: { [index: string]: GrammarEntry } = {
 
 function isInGrammar(utterance: string) {
   return utterance.toLowerCase() in grammar;
+}
+
+const celebrity: { [index: string]: CelebrityEntry } = {
+  nicks: { person: "stevie nicks", intro: "is a legendary singer-songwriter from the USA, famous for Edge of Seventeen, Rhiannon, and Landslide" },
+  jett: { person: "joan jett", intro: "is a rock icon from the USA, famous for I Love Rock ‘n’ Roll, Bad Reputation, and Crimson and Clover." },
+  pj: { person: "pj harvey", intro: "is an alternative rock artist from the UK, famous for her raw and emotionally intense albums like Rid of Me." },
+  smith: { person: "patti smith", intro: "is a punk rock legend from the USA, famous for her groundbreaking album Horses and iconic songs like Because the Night, Gloria, and Dancing Barefoot." }
+};
+
+
+function isAFamousPerson(utterance: string): string {
+  console.log(utterance)
+  let breifIntro: string = "";
+  for (const i in celebrity) {
+    if (celebrity[i].person === utterance.toLowerCase() && !!celebrity[i].intro) {
+      breifIntro = celebrity[i].intro;
+      return breifIntro;
+    }
+  }
+
+  breifIntro = "I don't have information about this person!"
+
+  return breifIntro;
+
 }
 
 // Function to check if the name provided by users is in the grammar
@@ -173,6 +210,7 @@ const dmMachine = setup({
     "spst.listen": ({ context }) =>
       context.spstRef.send({
         type: "LISTEN",
+        value: { nlu: true } /** Local activation of NLU */,
       }),
   },
 }).createMachine({
@@ -196,35 +234,57 @@ const dmMachine = setup({
     },
     WaitToStart: {
       // when the machine is ready, the user click the button to say Hi:)
-      on: { CLICK: "GreetingFromUser" },
+      on: { CLICK: "Greeting" },
     },
     // A state handling user's greeting
     // Limitation: It accepts all user input. It doesn't check if it's Hi or any other invalid inputs
-    GreetingFromUser: {
-      entry: { type: "spst.listen" },
+    Greeting: {
+      initial: "Prompt",
       on: {
-        RECOGNISED: {
-          actions: assign(({ event }) => {
-            return { greetingFromUser: event.value };
-          }),
-        },
-        ASR_NOINPUT: {
-          actions: assign({ greetingFromUser: null }),
-        },
         LISTEN_COMPLETE: [
-          // when the system detects users' input, pass to the Greeting state
           {
-            target: "Greeting",
-            guard: ({ context }) => !!context.greetingFromUser,
+            target: "CreateAMeeting",
+            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "CreateAMeeting"
+
           },
-          // if the user isn't speaking, return to the initial state
           {
-            target: "Prepare"
-          }
+            target: "WhoIsX",
+            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "CheckCelebrity"
+            ,
+          },
+          {
+            target: ".NoInput",
+          },
         ],
       },
+      states: {
+        Prompt: {
+          entry: { type: "spst.speak", params: { utterance: `Hello! What can I do for you?` } },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't hear you! What can I do for you?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { nluValue: event.nluValue };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ nluValue: null }),
+            },
+          },
+        },
+      },
     },
-    Greeting: {
+    CreateAMeeting: {
       initial: "Prompt",
       on: {
         LISTEN_COMPLETE: [
@@ -278,6 +338,21 @@ const dmMachine = setup({
           },
         },
       },
+    },
+    WhoIsX: {
+      entry: {
+        type: "spst.speak",
+        params: ({ context }) => {
+          console.log("hey")
+          console.log(context.nluValue!.entities[0].text)
+          const message = isAFamousPerson(context.nluValue!.entities[0].text);
+          console.log(message)
+          return {
+            utterance: `${context.nluValue!.entities[0].text} ${message}`,
+          };
+        },
+      },
+      on: { SPEAK_COMPLETE: "Done" },
     },
     AskForDate: {
       initial: "Prompt",
@@ -454,7 +529,7 @@ const dmMachine = setup({
               !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
           },
           {
-            target: "Greeting.AskForPerson",
+            target: "CreateAMeeting.AskForPerson",
             guard: ({ context }) =>
               !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
           },
@@ -524,7 +599,7 @@ const dmMachine = setup({
               !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
           },
           {
-            target: "Greeting.AskForPerson",
+            target: "CreateAMeeting.AskForPerson",
             guard: ({ context }) =>
               !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
           },
