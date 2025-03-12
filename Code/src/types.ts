@@ -1,3 +1,4 @@
+import { List } from "microsoft-cognitiveservices-speech-sdk/distrib/lib/src/common/List";
 import { Hypothesis, SpeechStateExternalEvent } from "speechstate";
 import { AnyActorRef } from "xstate";
 
@@ -7,11 +8,11 @@ export interface DMContext {
   // Added new variables to store different user inputs
   nluValue: NLUValue | null,
   greetingFromUser: Hypothesis[] | null;
-  name: Hypothesis[] | null;
-  date: Hypothesis[] | null;
-  ifWholeDay: Hypothesis[] | null;
-  time: Hypothesis[] | null;
-  ifCreateAppointment: Hypothesis[] | null;
+  name: string | null;
+  date: string | null;
+  ifWholeDay: string | null;
+  time: string | null;
+  ifCreateAppointment: string | null;
 }
 
 interface NLUValue {
@@ -22,9 +23,12 @@ interface NLUValue {
 type Entity = {
   category: string;
   text: string;
-  offset: number;
-  length: number;
-  confidenceScore: number;
+  extraInformation: YesOrNo[]
 };
+
+type YesOrNo = {
+  extraInformationKind: string,
+  key: string
+}
 
 export type DMEvents = SpeechStateExternalEvent | { type: "CLICK" };

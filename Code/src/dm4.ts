@@ -233,11 +233,8 @@ const dmMachine = setup({
       on: { ASRTTS_READY: "WaitToStart" },
     },
     WaitToStart: {
-      // when the machine is ready, the user click the button to say Hi:)
       on: { CLICK: "Greeting" },
     },
-    // A state handling user's greeting
-    // Limitation: It accepts all user input. It doesn't check if it's Hi or any other invalid inputs
     Greeting: {
       initial: "Prompt",
       on: {
@@ -291,14 +288,12 @@ const dmMachine = setup({
           // If a valid name is provided, it passes to state AskForDate
           {
             target: "AskForDate",
-            guard: ({ context }) => !!context.name && isNameValid(context.name![0].utterance),
+            guard: ({ context }) => context.nluValue?.entities[0]?.category === "person",
           },
           // if the name is not in the grammar or no user input detected, reraise the question
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.name && !isNameValid(context.name![0].utterance),
           },
-          { target: ".NoInput" },
         ],
       },
       states: {
@@ -309,14 +304,7 @@ const dmMachine = setup({
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `The name you said seems invalid. Could you say again or provide another name?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear you! Who are you meeting with?` },
+            params: { utterance: `I can't hear you or the name you said seems invalid. Could you say again or provide another name?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -329,11 +317,12 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { name: event.value };
+                console.log(event.nluValue)
+                return { nluValue: event.nluValue, name: event.nluValue?.entities[0]?.text };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ name: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -343,10 +332,7 @@ const dmMachine = setup({
       entry: {
         type: "spst.speak",
         params: ({ context }) => {
-          console.log("hey")
-          console.log(context.nluValue!.entities[0].text)
           const message = isAFamousPerson(context.nluValue!.entities[0].text);
-          console.log(message)
           return {
             utterance: `${context.nluValue!.entities[0].text} ${message}`,
           };
@@ -361,14 +347,12 @@ const dmMachine = setup({
           // if the provided date is valid, move forward to state IfWholeDay
           {
             target: "IfWholeDay",
-            guard: ({ context }) => !!context.date && isDateValid(context.date![0].utterance)
+            guard: ({ context }) => context.nluValue?.entities[1]?.category === "date"
           },
           // if the date is not in the grammar, invalid, or no user input detected, reraise the question
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.date && !isDateValid(context.date![0].utterance)
           },
-          { target: ".NoInput" },
         ],
       },
       states: {
@@ -376,17 +360,10 @@ const dmMachine = setup({
           entry: { type: "spst.speak", params: { utterance: `On which day is your meeting?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear you! On which day is your meeting?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `It's not a valid day. On which day is your meeting?` },
+            params: { utterance: `I can't hear you or the day you said is not a valid day. On which day is your meeting?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -395,11 +372,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { date: event.value };
+                return { nluValue: event.nluValue, date: event.nluValue?.entities[1]?.text };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ date: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -415,21 +392,18 @@ const dmMachine = setup({
           {
             target: "AskForTime",
             guard: ({ context }) =>
-              !!context.ifWholeDay && isInputYesOrNo(context.ifWholeDay![0].utterance) === "no",
+              context.nluValue?.entities[0]?.extraInformation[0]?.key === "no"
 
           },
           {
             target: "NoTimeProvided",
             guard: ({ context }) =>
-              !!context.ifWholeDay && isInputYesOrNo(context.ifWholeDay![0].utterance) === "yes",
+              context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
 
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) =>
-              !!context.ifWholeDay && isInputYesOrNo(context.ifWholeDay![0].utterance) === "invalid",
           },
-          { target: ".NoInput" },
         ],
       },
       states: {
@@ -437,17 +411,10 @@ const dmMachine = setup({
           entry: { type: "spst.speak", params: { utterance: `Will it take the whole day?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear you! Will it take the whole day?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I can't understand you! Will it take the whole day?` },
+            params: { utterance: `I can't hear your or I can't understand what you said! Will it take the whole day?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -456,11 +423,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { ifWholeDay: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ ifWholeDay: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -474,13 +441,11 @@ const dmMachine = setup({
           // if the time is not valid or not in the grammar, reraise the question
           {
             target: "WithATime",
-            guard: ({ context }) => !!context.time && isTimeValid(context.time![0].utterance)
+            guard: ({ context }) => context.nluValue?.entities[0]?.category === "time"
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.time && !isTimeValid(context.time![0].utterance)
           },
-          { target: ".NoInput" },
         ],
       },
       states: {
@@ -488,17 +453,10 @@ const dmMachine = setup({
           entry: { type: "spst.speak", params: { utterance: `What time is your meeting?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear you! What time is your meeting?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `It's not a valid time. Could you provide a valid time?` },
+            params: { utterance: `I can't hear you or the time provided is not a valid time. Could you provide a valid time?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -507,11 +465,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { time: event.value };
+                return { nluValue: event.nluValue, time: event.nluValue?.entities[0]?.text };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ time: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -526,19 +484,16 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
+              context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
           },
           {
             target: "CreateAMeeting.AskForPerson",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
+              context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) =>
-              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
           },
-          { target: ".NoInput" },
         ],
       },
       states: {
@@ -546,18 +501,8 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: ({ context }) => ({
-              utterance: `Do you want me to create an appointment with ${context.name![0].utterance}
-              on ${context.date![0].utterance}`,
-            }),
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: ({ context }) => ({
-              utterance: `I can't hear you! Do you want me to create an appointment with ${context.name![0].utterance}
-              on ${context.date![0].utterance}`,
+              utterance: `Do you want me to create an appointment with ${context.name}
+              on ${context.date}`,
             }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
@@ -566,8 +511,8 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: ({ context }) => ({
-              utterance: `I can't understand you! Do you want me to create an appointment with ${context.name![0].utterance}
-              on ${context.date![0].utterance}`,
+              utterance: `I can't hear you or I can't understand you! Do you want me to create an appointment with ${context.name}
+              on ${context.date}`,
             }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
@@ -577,11 +522,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { ifCreateAppointment: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ ifCreateAppointment: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -596,19 +541,16 @@ const dmMachine = setup({
           {
             target: "AppointmentBooked",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "yes",
+              context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
           },
           {
             target: "CreateAMeeting.AskForPerson",
             guard: ({ context }) =>
-              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "no",
+              context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) =>
-              !!context.ifCreateAppointment && isInputYesOrNo(context.ifCreateAppointment![0].utterance) === "invalid",
           },
-          { target: ".NoInput" },
         ],
       },
       states: {
@@ -616,8 +558,8 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: ({ context }) => ({
-              utterance: `Do you want me to create an appointment with ${context.name![0].utterance}
-              on ${context.date![0].utterance} at ${context.time![0].utterance}`,
+              utterance: `Do you want me to create an appointment with ${context.name}
+              on ${context.date} at ${context.time}`,
             }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
@@ -626,8 +568,8 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: ({ context }) => ({
-              utterance: `I can't hear you. Do you want me to create an appointment with ${context.name![0].utterance}
-              on ${context.date![0].utterance} at ${context.time![0].utterance}`,
+              utterance: `I can't hear you. Do you want me to create an appointment with ${context.name}
+              on ${context.date} at ${context.time}`,
             }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
@@ -636,8 +578,8 @@ const dmMachine = setup({
           entry: {
             type: "spst.speak",
             params: ({ context }) => ({
-              utterance: `I can't understand. Do you want me to create an appointment with ${context.name![0].utterance}
-              on ${context.date![0].utterance} at ${context.time![0].utterance}`,
+              utterance: `I can't understand. Do you want me to create an appointment with ${context.name}
+              on ${context.date} at ${context.time}`,
             }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
@@ -647,11 +589,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { ifCreateAppointment: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ ifCreateAppointment: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
