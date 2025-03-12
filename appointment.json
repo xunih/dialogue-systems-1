@@ -1,0 +1,243 @@
+{
+    "projectFileVersion": "2024-11-15-preview",
+    "stringIndexType": "Utf16CodeUnit",
+    "metadata": {
+        "projectKind": "Conversation",
+        "settings": {
+            "confidenceThreshold": 0,
+            "normalizeCasing": false,
+            "augmentDiacritics": false
+        },
+        "projectName": "appointment",
+        "multilingual": true,
+        "description": "",
+        "language": "en-us"
+    },
+    "assets": {
+        "projectKind": "Conversation",
+        "intents": [
+            {
+                "category": "None"
+            },
+            {
+                "category": "CreateAMeeting"
+            },
+            {
+                "category": "CheckCelebrity"
+            }
+        ],
+        "entities": [
+            {
+                "category": "time",
+                "compositionSetting": "combineComponents",
+                "prebuilts": [
+                    {
+                        "category": "DateTime"
+                    }
+                ]
+            },
+            {
+                "category": "person",
+                "compositionSetting": "combineComponents",
+                "prebuilts": [
+                    {
+                        "category": "Person.Name"
+                    }
+                ]
+            },
+            {
+                "category": "yesorno",
+                "compositionSetting": "combineComponents",
+                "list": {
+                    "sublists": [
+                        {
+                            "listKey": "no",
+                            "synonyms": [
+                                {
+                                    "language": "en-us",
+                                    "values": [
+                                        "no",
+                                        "nope",
+                                        "nah",
+                                        "no way",
+                                        "not at all",
+                                        "uh-uh"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "listKey": "yes",
+                            "synonyms": [
+                                {
+                                    "language": "en-us",
+                                    "values": [
+                                        "yes",
+                                        "yeah",
+                                        "yes please",
+                                        "yep",
+                                        "yup",
+                                        "sure",
+                                        "definitely",
+                                        "absolutely"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "category": "date",
+                "compositionSetting": "combineComponents",
+                "prebuilts": [
+                    {
+                        "category": "DateTime"
+                    }
+                ]
+            }
+        ],
+        "utterances": [
+            {
+                "text": "Google this person for me",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Patti Smith",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Who is this person?",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "What does Patti Smith do?",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Have you heard about Patti Smith?",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Do you know Patti Smith?",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "I would like to find information about this person",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "I want to know more about a person",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Could you check this person for me?",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Who is Patti Smith?",
+                "language": "en-us",
+                "intent": "CheckCelebrity",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Schedule a meeting",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Create a meeting",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "I need you to create a meeting",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "How about schedule a meeting?",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "What about create a meeting?",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Can you create a meeting for me?",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "Could you schedule a meeting for me?",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "I'd like to create a meeting",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "I would like to schedule a meeting",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            },
+            {
+                "text": "I want to create a meeting",
+                "language": "en-us",
+                "intent": "CreateAMeeting",
+                "entities": [],
+                "dataset": "Train"
+            }
+        ]
+    }
+}

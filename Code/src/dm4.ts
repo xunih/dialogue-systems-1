@@ -246,11 +246,11 @@ const dmMachine = setup({
           },
           {
             target: "WhoIsX",
-            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "CheckCelebrity"
+            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "CheckCelebrity" && !!context.nluValue!.entities[0]?.text
             ,
           },
           {
-            target: ".NoInput",
+            target: ".InvalidInput",
           },
         ],
       },
@@ -259,10 +259,10 @@ const dmMachine = setup({
           entry: { type: "spst.speak", params: { utterance: `Hello! What can I do for you?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
-        NoInput: {
+        InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I can't hear you! What can I do for you?` },
+            params: { utterance: `You didn't say anything or I can't do what you just requested unfortunately! Could you say again?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
