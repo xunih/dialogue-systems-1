@@ -3,7 +3,6 @@ import { Settings, speechstate } from "speechstate";
 import { createBrowserInspector } from "@statelyai/inspect";
 import { KEY, NLU_KEY } from "./azure";
 import { DMContext, DMEvents } from "./types";
-import { snapshot } from "node:test";
 
 const inspector = createBrowserInspector();
 
@@ -27,7 +26,7 @@ const settings: Settings = {
   asrDefaultCompleteTimeout: 0,
   asrDefaultNoInputTimeout: 5000,
   locale: "en-US",
-  ttsDefaultVoice: "en-US-DavisNeural",
+  ttsDefaultVoice: "en-US-AvaMultilingualNeural",
 };
 
 const color: string[] = ["red", "black", "brown"];
@@ -52,34 +51,6 @@ interface CelebrityEntry {
 }
 
 const grammar: { [index: string]: GrammarEntry } = {
-  vlad: { person: "Vladislav Maraev" },
-  aya: { person: "Nayat Astaiza Soriano" },
-  victoria: { person: "Victoria Daniilidou" },
-  // Create a local simple first name database
-  names: {
-    names: [
-      "john", "jane", "michael", "emily", "liam", "olivia", "noah", "emma", "james", "sophia",
-      "william", "isabella", "benjamin", "mia", "lucas", "charlotte", "henry", "amelia",
-      "alexander", "harper", "daniel", "evelyn", "matthew", "abigail", "joseph", "ella",
-      "samuel", "avery", "david", "scarlett", "carter", "grace", "owen", "chloe",
-      "wyatt", "victoria", "jack", "riley", "luke", "aria", "gabriel", "lily",
-      "ethan", "hannah", "mason", "zoe", "logan", "nora", "elijah", "lillian",
-      "jacob", "hazel", "aiden", "ellie", "sebastian", "lucy", "caleb", "madeline",
-      "nathan", "aurora", "dylan", "savannah", "isaac", "penelope", "julian", "stella",
-      "eli", "violet", "hunter", "bella", "anthony", "layla", "leo", "brooklyn",
-      "thomas", "addison", "hudson", "natalie", "charles", "leah", "ezra", "skylar",
-      "christopher", "autumn", "joshua", "paisley", "nicholas", "everly", "andrew", "maya",
-      "ryan", "willow", "jaxon", "samantha", "aaron", "nova", "adam", "ariana", "alex",
-      "vlad", "nayat", "victoria", "staffan"
-    ]
-  },
-  // Store days including weekday, weekend, today, and tomorrow
-  week: { week: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "today", "tomorrow"] },
-  //monday: { day: "Monday" },
-  //tuesday: { day: "Tuesday" },
-  "10": { time: "10:00" },
-  "11": { time: "11:00" },
-  // Store words that have a same/similar meaning to yes and no
   yesOrNo: {
     yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely"],
     no: ["no", "nah", "nope", "no way", "not at all", "uh-uh"]
@@ -167,7 +138,7 @@ const dmMachine = setup({
       },
       states: {
         Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `Hi! Welcome to Mushroom In Mind! Is this the first time you play this game?` } },
+          entry: { type: "spst.speak", params: { utterance: `Hello! Welcome to Mushroom In Mind! Is this the first time you play this game?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         InvalidInput: {
@@ -426,19 +397,13 @@ const dmMachine = setup({
         },
       },
     },
-  },
-
-
-
-
-  // When the appointment is booked, users can click again to go to the Greeting state
-  Done: {
-    on: {
-      CLICK: "Greeting",
+    Guess: {},
+    Done: {
+      on: {
+        CLICK: "Greeting",
+      },
     },
   },
-
-
 });
 
 const dmActor = createActor(dmMachine, {
