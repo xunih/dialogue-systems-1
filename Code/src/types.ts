@@ -5,16 +5,19 @@ import { AnyActorRef } from "xstate";
 export interface DMContext {
   spstRef: AnyActorRef;
   lastResult: Hypothesis[] | null;
-  // Added new variables to store different user inputs
-  nluValue: NLUValue | null,
-  greetingFromUser: Hypothesis[] | null;
-  name: string | null;
-  date: string | null;
-  ifWholeDay: string | null;
-  time: string | null;
-  ifCreateAppointment: string | null;
+  yesOrNo: Hypothesis[] | null
+  profile: Profile | null;
 }
 
+interface Profile {
+  colour: string;
+  shape: string;
+  size: string;
+  habit: string;
+  other: string;
+}
+
+/*
 interface NLUValue {
   topIntent?: string;
   entities: Entity[];
@@ -29,6 +32,6 @@ type Entity = {
 type YesOrNo = {
   extraInformationKind: string,
   key: string
-}
+}*/
 
 export type DMEvents = SpeechStateExternalEvent | { type: "CLICK" };

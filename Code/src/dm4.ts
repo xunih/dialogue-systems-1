@@ -81,42 +81,6 @@ const grammar: { [index: string]: GrammarEntry } = {
   },
 };
 
-function isInGrammar(utterance: string) {
-  return utterance.toLowerCase() in grammar;
-}
-
-const celebrity: { [index: string]: CelebrityEntry } = {
-  nicks: { person: "stevie nicks", intro: "is a legendary singer-songwriter from the USA, famous for Edge of Seventeen, Rhiannon, and Landslide" },
-  jett: { person: "joan jett", intro: "is a rock icon from the USA, famous for I Love Rock ‘n’ Roll, Bad Reputation, and Crimson and Clover." },
-  pj: { person: "pj harvey", intro: "is an alternative rock artist from the UK, famous for her raw and emotionally intense albums like Rid of Me." },
-  smith: { person: "patti smith", intro: "is a punk rock legend from the USA, famous for her groundbreaking album Horses and iconic songs like Because the Night, Gloria, and Dancing Barefoot." }
-};
-
-
-function isAFamousPerson(utterance: string): string {
-  console.log(utterance)
-  let breifIntro: string = "";
-  for (const i in celebrity) {
-    if (celebrity[i].person === utterance.toLowerCase() && !!celebrity[i].intro) {
-      breifIntro = celebrity[i].intro;
-      return breifIntro;
-    }
-  }
-
-  breifIntro = "I don't have information about this person!"
-
-  return breifIntro;
-
-}
-
-// Function to check if the name provided by users is in the grammar
-function isNameValid(utterance: string): boolean {
-  if (grammar.names.names?.includes(utterance.toLowerCase())) {
-    return true;
-  }
-  return false;
-}
-
 // Fuction to check if the answer to yes/no question is in the grammar 
 // and if the answer means yes or no
 function isInputYesOrNo(utterance: string): string | null {
@@ -127,69 +91,6 @@ function isInputYesOrNo(utterance: string): string | null {
     return "no";
   }
   return "invalid";
-}
-
-// Function to check if the provided date is in the grammar or if it's a valid date
-function isDateValid(utterance: string): boolean {
-  // check if the provided day is in the grammar
-  var isWeekDay = grammar.week.week?.includes(utterance.toLowerCase());
-  // use regex to remove date ordinals (st, nd, rd, th)
-  utterance = utterance.replace(/(\d+)(st|nd|rd|th)/, '$1');
-  // format the date into the form of "Month Day", eg., March 15
-  const normalisedUtterance = utterance.replace(/(\d+)\s*of\s*(\w+)/, '$2 $1');
-  // create a date object with a specified date and time
-  var date = new Date(normalisedUtterance);
-  // check if it's a valid date
-  var ifDateValid = !isNaN(date.getTime());
-  // handle date like March 32, 
-  // becuse it can automatically convert it to a valid date Mrach 1 when creating the date object
-  const parsedDay = date.getDate();
-  // compare the day in the user input and the parsed day corrected when creating the date object
-  // if it's not the same, return false
-  var day = Number(normalisedUtterance.split(" ")[1])
-  if (parsedDay !== day && !isWeekDay) {
-    return false;
-  }
-  // if it's a valid date or the day is in the grammar return true
-  if (ifDateValid || isWeekDay) {
-    return true;
-  }
-  return false;
-}
-
-// Function to check if the provided time is valid
-// Limitation: When the user input consists of 3 numbers, it might be recognised as an invalid time such as 8:17
-function isTimeValid(utterance: string): boolean {
-  var isTimeValid = false;
-  var hr;
-  var min;
-  /* I noticed that if the speech recognition notice that the user input is a time,
-  it will convert it to a format in HH:MM, which inlcudes ":" 
-  Hence, the function first check if it includes ":",
-  if so, the provided time is valid.
-  if not, it will check the length of the utterance.
-  If it's a 4-digit number, get the number for hour and minute and validate.
-  If it's a 1 or 2-digit number, check if it's a valid hour
-  */
-  if (utterance.includes(":")) {
-    isTimeValid = true
-  } else if (utterance.length === 4) {
-    hr = Number(utterance.slice(0, 2));
-    min = Number(utterance.slice(-2));
-    if (hr < 24 && min < 60) {
-      isTimeValid = true;
-    }
-  } else if (utterance.length === 1 || utterance.length === 2) {
-    if (0 < Number(utterance) && Number(utterance) < 24) {
-      isTimeValid = true;
-    }
-  }
-  return isTimeValid
-};
-
-
-function getPerson(utterance: string) {
-  return (grammar[utterance.toLowerCase()] || {}).person;
 }
 
 const dmMachine = setup({
@@ -217,13 +118,8 @@ const dmMachine = setup({
   context: ({ spawn }) => ({
     spstRef: spawn(speechstate, { input: settings }),
     lastResult: null,
-    nluValue: null,
-    greetingFromUser: null,
-    name: null,
-    date: null,
-    time: null,
-    ifWholeDay: null,
-    ifCreateAppointment: null,
+    yesOrNo: null,
+    profile: null,
   }),
   id: "DM",
   initial: "Prepare",
@@ -240,347 +136,39 @@ const dmMachine = setup({
       on: {
         LISTEN_COMPLETE: [
           {
-            target: "CreateAMeeting",
-            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "CreateAMeeting"
+            target: "IntroduceRules",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
 
           },
           {
-            target: "WhoIsX",
-            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "CheckCelebrity" && !!context.nluValue!.entities[0]?.text
-            ,
+            target: "StartGameIntro",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
           },
           {
             target: ".InvalidInput",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+          },
+          {
+            target: ".NoInput",
           },
         ],
       },
       states: {
         Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `Hello! What can I do for you?` } },
+          entry: { type: "spst.speak", params: { utterance: `Hi! Welcome to Mushroom In Mind! Is this the first time you play this game?` } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `You didn't say anything or I can't do what you just requested unfortunately! Could you say again?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        Ask: {
-          entry: { type: "spst.listen" },
-          on: {
-            RECOGNISED: {
-              actions: assign(({ event }) => {
-                return { nluValue: event.nluValue };
-              }),
-            },
-            ASR_NOINPUT: {
-              actions: assign({ nluValue: null }),
-            },
-          },
-        },
-      },
-    },
-    CreateAMeeting: {
-      initial: "Prompt",
-      on: {
-        LISTEN_COMPLETE: [
-          // If a valid name is provided, it passes to state AskForDate
-          {
-            target: "AskForDate",
-            guard: ({ context }) => context.nluValue?.entities[0]?.category === "person",
-          },
-          // if the name is not in the grammar or no user input detected, reraise the question
-          {
-            target: ".InvalidInput",
-          },
-        ],
-      },
-      states: {
-        Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `Let's create an appointment!` } },
-          on: { SPEAK_COMPLETE: "AskForPerson" },
-        },
-        InvalidInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear you or the name you said seems invalid. Could you say again or provide another name?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        AskForPerson: {
-          entry: { type: "spst.speak", params: { utterance: `Who are you meeting with?` } },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        Ask: {
-          entry: { type: "spst.listen" },
-          on: {
-            RECOGNISED: {
-              actions: assign(({ event }) => {
-                console.log(event.nluValue)
-                return { nluValue: event.nluValue, name: event.nluValue?.entities[0]?.text };
-              }),
-            },
-            ASR_NOINPUT: {
-              actions: assign({ nluValue: null }),
-            },
-          },
-        },
-      },
-    },
-    WhoIsX: {
-      entry: {
-        type: "spst.speak",
-        params: ({ context }) => {
-          const message = isAFamousPerson(context.nluValue!.entities[0].text);
-          return {
-            utterance: `${context.nluValue!.entities[0].text} ${message}`,
-          };
-        },
-      },
-      on: { SPEAK_COMPLETE: "Done" },
-    },
-    AskForDate: {
-      initial: "Prompt",
-      on: {
-        LISTEN_COMPLETE: [
-          // if the provided date is valid, move forward to state IfWholeDay
-          {
-            target: "IfWholeDay",
-            guard: ({ context }) => context.nluValue?.entities[1]?.category === "date"
-          },
-          // if the date is not in the grammar, invalid, or no user input detected, reraise the question
-          {
-            target: ".InvalidInput",
-          },
-        ],
-      },
-      states: {
-        Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `On which day is your meeting?` } },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        InvalidInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear you or the day you said is not a valid day. On which day is your meeting?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        Ask: {
-          entry: { type: "spst.listen" },
-          on: {
-            RECOGNISED: {
-              actions: assign(({ event }) => {
-                return { nluValue: event.nluValue, date: event.nluValue?.entities[1]?.text };
-              }),
-            },
-            ASR_NOINPUT: {
-              actions: assign({ nluValue: null }),
-            },
-          },
-        },
-      },
-    },
-    IfWholeDay: {
-      initial: "Prompt",
-      on: {
-        LISTEN_COMPLETE: [
-          // If the user answers no, pass to state AskForTime
-          // if the answer is yes, pass to state NoTimeProvided
-          // if the answer is not a valid date, reraise question
-          {
-            target: "AskForTime",
-            guard: ({ context }) =>
-              context.nluValue?.entities[0]?.extraInformation[0]?.key === "no"
-
-          },
-          {
-            target: "NoTimeProvided",
-            guard: ({ context }) =>
-              context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
-
-          },
-          {
-            target: ".InvalidInput",
-          },
-        ],
-      },
-      states: {
-        Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `Will it take the whole day?` } },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        InvalidInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear your or I can't understand what you said! Will it take the whole day?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        Ask: {
-          entry: { type: "spst.listen" },
-          on: {
-            RECOGNISED: {
-              actions: assign(({ event }) => {
-                return { nluValue: event.nluValue };
-              }),
-            },
-            ASR_NOINPUT: {
-              actions: assign({ nluValue: null }),
-            },
-          },
-        },
-      },
-    },
-    AskForTime: {
-      initial: "Prompt",
-      on: {
-        LISTEN_COMPLETE: [
-          // If the time provided is valid, pass it to state WithATime
-          // if the time is not valid or not in the grammar, reraise the question
-          {
-            target: "WithATime",
-            guard: ({ context }) => context.nluValue?.entities[0]?.category === "time"
-          },
-          {
-            target: ".InvalidInput",
-          },
-        ],
-      },
-      states: {
-        Prompt: {
-          entry: { type: "spst.speak", params: { utterance: `What time is your meeting?` } },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        InvalidInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I can't hear you or the time provided is not a valid time. Could you provide a valid time?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        Ask: {
-          entry: { type: "spst.listen" },
-          on: {
-            RECOGNISED: {
-              actions: assign(({ event }) => {
-                return { nluValue: event.nluValue, time: event.nluValue?.entities[0]?.text };
-              }),
-            },
-            ASR_NOINPUT: {
-              actions: assign({ nluValue: null }),
-            },
-          },
-        },
-      },
-    },
-    NoTimeProvided: {
-      initial: "Prompt",
-      on: {
-        LISTEN_COMPLETE: [
-          // if the user wants to book an appointment, move to state AppointmentBooked
-          // otherwise the machine will ask for a person again
-          {
-            target: "AppointmentBooked",
-            guard: ({ context }) =>
-              context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
-          },
-          {
-            target: "CreateAMeeting.AskForPerson",
-            guard: ({ context }) =>
-              context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
-          },
-          {
-            target: ".InvalidInput",
-          },
-        ],
-      },
-      states: {
-        Prompt: {
-          entry: {
-            type: "spst.speak",
-            params: ({ context }) => ({
-              utterance: `Do you want me to create an appointment with ${context.name}
-              on ${context.date}`,
-            }),
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        InvalidInput: {
-          entry: {
-            type: "spst.speak",
-            params: ({ context }) => ({
-              utterance: `I can't hear you or I can't understand you! Do you want me to create an appointment with ${context.name}
-              on ${context.date}`,
-            }),
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        Ask: {
-          entry: { type: "spst.listen" },
-          on: {
-            RECOGNISED: {
-              actions: assign(({ event }) => {
-                return { nluValue: event.nluValue };
-              }),
-            },
-            ASR_NOINPUT: {
-              actions: assign({ nluValue: null }),
-            },
-          },
-        },
-      },
-    },
-    WithATime: {
-      initial: "Prompt",
-      on: {
-        LISTEN_COMPLETE: [
-          // if the user answers yes, goes to state AppointmentBook
-          // otherwise ask for a person again
-          {
-            target: "AppointmentBooked",
-            guard: ({ context }) =>
-              context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
-          },
-          {
-            target: "CreateAMeeting.AskForPerson",
-            guard: ({ context }) =>
-              context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
-          },
-          {
-            target: ".InvalidInput",
-          },
-        ],
-      },
-      states: {
-        Prompt: {
-          entry: {
-            type: "spst.speak",
-            params: ({ context }) => ({
-              utterance: `Do you want me to create an appointment with ${context.name}
-              on ${context.date} at ${context.time}`,
-            }),
+            params: { utterance: `I cannot understand what you said. Please say yes if you would like to learn more about the rules, or say no to directly start the game!` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: ({ context }) => ({
-              utterance: `I can't hear you. Do you want me to create an appointment with ${context.name}
-              on ${context.date} at ${context.time}`,
-            }),
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        InvalidInput: {
-          entry: {
-            type: "spst.speak",
-            params: ({ context }) => ({
-              utterance: `I can't understand. Do you want me to create an appointment with ${context.name}
-              on ${context.date} at ${context.time}`,
-            }),
+            params: { utterance: `I cannot hear you! Is this the first time you play this game?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -589,30 +177,41 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { nluValue: event.nluValue };
+                return { yesOrNo: event.value };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ nluValue: null }),
+              actions: assign({ yesOrNo: null }),
             },
           },
         },
       },
     },
-    AppointmentBooked: {
-      entry: {
-        type: "spst.speak",
-        params: { utterance: `You appointment has been created!` },
+    IntroduceRules: {
+      entry: { type: "spst.speak", params: { utterance: `Cool! Now I will tell you the rules! I know very well of six fungi! These images show how they look like. Think of one of them and I will guess which one you are thinking about! I will ask you five questions  about their appearance. If I guess correctly, I win! Otherwise I lose. After each round, you can click the image to know more about them! Think of one now and I will start my questions in five seconds!` } },
+      after: {
+        5000: { target: 'StartGame' },
       },
-      on: { SPEAK_COMPLETE: "Done" },
     },
-    // When the appointment is booked, users can click again to go to the Greeting state
-    Done: {
-      on: {
-        CLICK: "Greeting",
+    StartGameIntro: {
+      entry: { type: "spst.speak", params: { utterance: `Nice to see you again! Let's start the game! You have five seconds to think of one fungus.` } },
+      after: {
+        5000: { target: 'StartGame' },
       },
+    },
+    StartGame: {
+
+    },
+
+  },
+  // When the appointment is booked, users can click again to go to the Greeting state
+  Done: {
+    on: {
+      CLICK: "Greeting",
     },
   },
+
+
 });
 
 const dmActor = createActor(dmMachine, {
