@@ -43,5 +43,14 @@
         "special": "dead man's fingers",
         "image": "https://www.allianceforthebay.org/wp-content/uploads/2019/10/FirstPhoto_DeadMansFinger_ccCharismaticPlanet-720x480.jpg",
         "intro": "Xylaria polymorpha, commonly known as dead man’s fingers, is an intriguing and eerie-looking fungus that grows on decaying wood. The fruiting bodies resemble dark, skeletal fingers reaching up from the ground or wood, often in clusters. It typically has a black or dark brown appearance, with a rough texture. Found in forests or woodlands, this fungus is not edible but is fascinating due to its unusual, finger-like shape. With its unique look and haunting name, Xylaria polymorpha is a memorable and curious specimen of the fungal world."
+    },
+    {
+        "name": "Trametes versicolor",
+        "color": "brown, tan, white, gray, yellow",
+        "shape": "fan circular wavy edge",
+        "size": "small",
+        "special": "medicine",
+        "image": "https://en.wikipedia.org/wiki/Trametes_versicolor#/media/File:Trametes_versicolor_G4_(1).JPG",
+        "intro": "Trametes versicolor, commonly known as turkey tail, is a colorful and striking fungus found on decaying wood. It gets its name from its vibrant, multicolored bands that resemble the feathers of a turkey’s tail. Apart from its beauty, turkey tail is valued for its medicinal properties, particularly its immune-boosting potential, and has been used in traditional medicine for centuries. It plays a crucial ecological role as a decomposer, helping break down organic matter in forests. Though not typically eaten, it's often used in supplements and herbal teas for its health benefits."
     }
 ]
