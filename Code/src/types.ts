@@ -6,15 +6,9 @@ export interface DMContext {
   spstRef: AnyActorRef;
   lastResult: Hypothesis[] | null;
   yesOrNo: Hypothesis[] | null
-  profile: Profile | null;
-}
-
-interface Profile {
-  colour: string;
-  shape: string;
-  size: string;
-  habit: string;
-  other: string;
+  color: Hypothesis[] | null;
+  shape: Hypothesis[] | null;
+  size: Hypothesis[] | null;
 }
 
 /*

@@ -4,14 +4,14 @@
         "color": "dark brown to dark grey, sometimes almost black",
         "shape": "egg-shaped cap",
         "size": "medium",
-        "special": "honeycomb-like, eatable",
+        "special": "honeycomb-like, edible",
         "image": "https://en.wikipedia.org/wiki/Morchella_elata#/media/File:Morchella_elata_Spitzmorchel_Morchella_conica.jpg",
         "intro": "Morchella elata, commonly known as the black morel, is a highly sought-after edible mushroom. It has a distinctive appearance with a honeycomb-like cap and a tall, slender stem. The cap is usually dark, ranging from brown to black, with deep pits and ridges. Black morels are seasonal fungi, typically appearing in spring, particularly in wooded areas, near streams, or in burnt forests. They thrive in moist, nutrient-rich soils and are known for their rich, earthy flavor and meaty texture, making them a favorite among chefs and mushroom hunters. When cooked, they offer a savory, nutty taste that's perfect for a variety of dishes."
     },
     {
         "name": "Coprinus comatus",
         "color": "white and then turn black",
-        "shape": "shaggy, white cap, egg, bell",
+        "shape": "shaggy, white cap, egg, bell, melting ice cream",
         "size": "tall",
         "special": "self-digestion",
         "image": "https://en.wikipedia.org/wiki/Coprinus_comatus#/media/File:Coprinus_comatus,_the_shaggy_ink_cap,_lawyer's_wig,_or_shaggy_mane_mushroom.jpg",
@@ -38,7 +38,7 @@
     {
         "name": "Xylaria polymorpha",
         "color": "black dark brown white gray",
-        "shape": "finger cruve",
+        "shape": "finger curve",
         "size": "medium",
         "special": "dead man's fingers",
         "image": "https://www.allianceforthebay.org/wp-content/uploads/2019/10/FirstPhoto_DeadMansFinger_ccCharismaticPlanet-720x480.jpg",

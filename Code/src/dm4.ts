@@ -30,6 +30,11 @@ const settings: Settings = {
   ttsDefaultVoice: "en-US-DavisNeural",
 };
 
+const color: string[] = ["red", "black", "brown"];
+const shape: string[] = ["bell", "umbrella"];
+const randomQuestions: string[] = ["Do you think the fungus is edible?", "Do you think the fungus can glow in the dark?", "Do you think the fungus looks like dead man's fingers"];
+var randomIndex: number = 0;
+
 interface GrammarEntry {
   person?: string;
   //day?: string;
@@ -93,6 +98,11 @@ function isInputYesOrNo(utterance: string): string | null {
   return "invalid";
 }
 
+function getARandomIndex(): number {
+  const index = Math.floor(Math.random() * randomQuestions.length);
+  return index;
+}
+
 const dmMachine = setup({
   types: {
     /** you might need to extend these */
@@ -119,7 +129,9 @@ const dmMachine = setup({
     spstRef: spawn(speechstate, { input: settings }),
     lastResult: null,
     yesOrNo: null,
-    profile: null,
+    color: null,
+    shape: null,
+    size: null,
   }),
   id: "DM",
   initial: "Prepare",
@@ -188,22 +200,237 @@ const dmMachine = setup({
       },
     },
     IntroduceRules: {
-      entry: { type: "spst.speak", params: { utterance: `Cool! Now I will tell you the rules! I know very well of six fungi! These images show how they look like. Think of one of them and I will guess which one you are thinking about! I will ask you five questions  about their appearance. If I guess correctly, I win! Otherwise I lose. After each round, you can click the image to know more about them! Think of one now and I will start my questions in five seconds!` } },
-      after: {
-        5000: { target: 'StartGame' },
+      entry: { type: "spst.speak", params: { utterance: `Cool! Now I will tell you the rules! I know very well of six fungi! These images show how they look like. Think of one of them and I will guess which one you are thinking about! I will ask you four questions  about their appearance. If I guess correctly, I win! Otherwise I lose. After each round, you can click the image to know more about them! Think of one now and I will start my questions in five seconds!` } },
+      on: {
+        SPEAK_COMPLETE: 'Timer'
       },
     },
     StartGameIntro: {
-      entry: { type: "spst.speak", params: { utterance: `Nice to see you again! Let's start the game! You have five seconds to think of one fungus.` } },
-      after: {
-        5000: { target: 'StartGame' },
+      entry: { type: "spst.speak", params: { utterance: `Nice to see you again! Let's start the game! You have five seconds to think of one of the fungi on the screen.` } },
+      on: {
+        SPEAK_COMPLETE: 'Timer'
       },
     },
-    StartGame: {
-
+    Timer: {
+      after: {
+        5000: { target: 'AskColor' }
+      }
     },
+    AskColor: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "AskShape",
+            guard: ({ context }) => !!context.color && color.includes(context.color[0].utterance.toLowerCase()),
 
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) => !!context.color && !color.includes(context.color[0].utterance.toLowerCase())
+          },
+          {
+            target: ".NoInput",
+          }
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: { type: "spst.speak", params: { utterance: `What color is the fungus you are thinking of?` } },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `What you just said is not a color. What color is the fungus you are thinking of?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I cannot hear you! What color is the fungus you are thinking of?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { color: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ color: null }),
+            },
+          },
+        },
+      },
+    },
+    AskShape: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "AskSize",
+            guard: ({ context }) => !!context.shape && shape.includes(context.shape[0].utterance.toLowerCase()),
+
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) => !!context.shape && !shape.includes(context.shape[0].utterance.toLowerCase())
+          },
+          {
+            target: ".NoInput",
+          }
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: { type: "spst.speak", params: { utterance: `What kind of shape does the fungus have?` } },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `Not in grammar` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I cannot hear you! What kind of shape does the fungus have?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { shape: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ shape: null }),
+            },
+          },
+        },
+      },
+    },
+    AskSize: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "AskSpeciality",
+            guard: ({ context }) => !!context.size && context.size[0].utterance.toLowerCase() in grammar
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) => !!context.size && !(context.size[0].utterance.toLowerCase() in grammar)
+          },
+          {
+            target: ".NoInput",
+          }
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: { type: "spst.speak", params: { utterance: randomQuestions[getARandomIndex()] } },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `not in grammar.` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I cannot hear you! ` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { size: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ size: null }),
+            },
+          },
+        },
+      },
+    },
+    AskSpeciality: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "Guess",
+            guard: ({ context }) => !!context.size && context.size[0].utterance.toLowerCase() in grammar
+          },
+          {
+            target: ".InvalidInput",
+            guard: ({ context }) => !!context.size && !(context.size[0].utterance.toLowerCase() in grammar)
+          },
+          {
+            target: ".NoInput",
+          }
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: {
+            actions: assign(() => {
+              return { randomIndex: getARandomIndex() };
+            }), type: "spst.speak", params: { utterance: randomQuestions[randomIndex] }
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        InvalidInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I can't understand what you said. Please answer yes or no.` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I cannot hear you! Does the fungus look like a giant?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { size: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ size: null }),
+            },
+          },
+        },
+      },
+    },
   },
+
+
+
+
   // When the appointment is booked, users can click again to go to the Greeting state
   Done: {
     on: {
