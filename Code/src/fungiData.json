@@ -1,0 +1,47 @@
+[
+    {
+        "name": "Morchella elata",
+        "color": "dark brown to dark grey, sometimes almost black",
+        "shape": "egg-shaped cap",
+        "size": "medium",
+        "special": "honeycomb-like, eatable",
+        "image": "https://en.wikipedia.org/wiki/Morchella_elata#/media/File:Morchella_elata_Spitzmorchel_Morchella_conica.jpg",
+        "intro": "Morchella elata, commonly known as the black morel, is a highly sought-after edible mushroom. It has a distinctive appearance with a honeycomb-like cap and a tall, slender stem. The cap is usually dark, ranging from brown to black, with deep pits and ridges. Black morels are seasonal fungi, typically appearing in spring, particularly in wooded areas, near streams, or in burnt forests. They thrive in moist, nutrient-rich soils and are known for their rich, earthy flavor and meaty texture, making them a favorite among chefs and mushroom hunters. When cooked, they offer a savory, nutty taste that's perfect for a variety of dishes."
+    },
+    {
+        "name": "Coprinus comatus",
+        "color": "white and then turn black",
+        "shape": "shaggy, white cap, egg, bell",
+        "size": "tall",
+        "special": "self-digestion",
+        "image": "https://en.wikipedia.org/wiki/Coprinus_comatus#/media/File:Coprinus_comatus,_the_shaggy_ink_cap,_lawyer's_wig,_or_shaggy_mane_mushroom.jpg",
+        "intro": "Coprinus comatus, commonly known as the shaggy ink cap or lawyer’s wig, is a unique and fascinating mushroom known for its distinctive shaggy, white cap that looks like a messy hairstyle. This mushroom is edible when young and has a delicate, mild flavor, often used in cooking. One of its most remarkable features is its process of deliquescence, where the cap dissolves into a black ink-like liquid as it matures. Found in grassy areas or lawns, it grows quickly, sometimes overnight. Apart from being edible, it's also of interest for its potential medicinal properties and has been historically used in ink-making."
+    },
+    {
+        "name": "Panellus stipticus",
+        "color": "yellow orange brown",
+        "shape": "fan",
+        "size": "small",
+        "special": "bioluminescence, glow in the dark",
+        "image": "https://en.wikipedia.org/wiki/Panellus_stipticus#/media/File:Panellus_stipticus_(37162668243).jpg",
+        "intro": "Panellus stipticus, also known as the bitter panus or luminescent panus, is a small, bioluminescent mushroom famous for its ability to glow in the dark with a faint, greenish light. It typically grows on decaying wood, especially in forests, and has a fan-shaped cap that ranges from yellowish to orange-brown in color. The mushroom’s stem is short and off-center. Aside from its unique glow, Panellus stipticus is known for its bitter taste and has been of interest in both natural studies and historical uses. It’s a cool example of how nature can light up the forest at night!"
+    },
+    {
+        "name": "Amanita muscaria",
+        "color": "red with white spots",
+        "shape": "umbrella convex or bell shape",
+        "size": "medium",
+        "special": "toxic",
+        "image": "https://en.wikipedia.org/wiki/Amanita_muscaria#/media/File:Amanita_muscaria_3_vliegenzwammen_op_rij.jpg",
+        "intro": "Amanita muscaria, commonly known as the fly agaric, is a striking and iconic mushroom with a bright red cap dotted with white spots. It is widely recognized in folklore and fairy tales due to its vivid appearance. This mushroom is hallucinogenic and contains compounds like muscarine and ibotenic acid, which can cause psychoactive effects when consumed. Though it is famous for its magical qualities in mythology, it is also toxic and can cause serious symptoms if ingested. Despite its beauty, Amanita muscaria should never be consumed without proper knowledge, as it can be dangerous."
+    },
+    {
+        "name": "Xylaria polymorpha",
+        "color": "black dark brown white gray",
+        "shape": "finger cruve",
+        "size": "medium",
+        "special": "dead man's fingers",
+        "image": "https://www.allianceforthebay.org/wp-content/uploads/2019/10/FirstPhoto_DeadMansFinger_ccCharismaticPlanet-720x480.jpg",
+        "intro": "Xylaria polymorpha, commonly known as dead man’s fingers, is an intriguing and eerie-looking fungus that grows on decaying wood. The fruiting bodies resemble dark, skeletal fingers reaching up from the ground or wood, often in clusters. It typically has a black or dark brown appearance, with a rough texture. Found in forests or woodlands, this fungus is not edible but is fascinating due to its unusual, finger-like shape. With its unique look and haunting name, Xylaria polymorpha is a memorable and curious specimen of the fungal world."
+    }
+]
