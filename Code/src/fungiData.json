@@ -1,6 +1,7 @@
 [
     {
         "name": "Morchella elata",
+        "nr": 1,
         "color": "dark brown to dark grey, sometimes almost black",
         "shape": "egg-shaped cap",
         "size": "medium",
@@ -10,6 +11,7 @@
     },
     {
         "name": "Coprinus comatus",
+        "nr": 2,
         "color": "white and then turn black",
         "shape": "shaggy, white cap, egg, bell, melting ice cream",
         "size": "tall",
@@ -19,6 +21,7 @@
     },
     {
         "name": "Panellus stipticus",
+        "nr": 3,
         "color": "yellow orange brown",
         "shape": "fan",
         "size": "small",
@@ -28,6 +31,7 @@
     },
     {
         "name": "Amanita muscaria",
+        "nr": 4,
         "color": "red with white spots",
         "shape": "umbrella convex or bell shape",
         "size": "medium",
@@ -37,6 +41,7 @@
     },
     {
         "name": "Xylaria polymorpha",
+        "nr": 5,
         "color": "black dark brown white gray",
         "shape": "finger curve",
         "size": "medium",
@@ -46,6 +51,7 @@
     },
     {
         "name": "Trametes versicolor",
+        "nr": 6,
         "color": "brown, tan, white, gray, yellow",
         "shape": "fan circular wavy edge",
         "size": "small",

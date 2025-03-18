@@ -3,8 +3,9 @@ import { Settings, speechstate } from "speechstate";
 import { createBrowserInspector } from "@statelyai/inspect";
 import { KEY, NLU_KEY } from "./azure";
 import { DMContext, DMEvents, Fungus } from "./types";
-import fungiData from "./fungiData.json"
 import { Context } from "microsoft-cognitiveservices-speech-sdk/distrib/lib/src/common.speech/SpeechServiceConfig";
+import { color, randomQuestions, shape } from "./fixedVariables";
+import { findBestMatchFungus, getARandomIndex } from "./helperFunctions";
 
 const inspector = createBrowserInspector();
 
@@ -31,11 +32,6 @@ const settings: Settings = {
   ttsDefaultVoice: "en-US-AvaMultilingualNeural",
 };
 
-const color: string[] = ["red", "black", "brown"];
-const shape: string[] = ["bell", "umbrella"];
-const randomQuestions: string[] = ["Do you think the fungus is edible?", "Do you think the fungus can glow in the dark?", "Do you think the fungus looks like dead man's fingers"];
-var randomIndex: number = 0;
-
 interface GrammarEntry {
   person?: string;
   //day?: string;
@@ -45,11 +41,6 @@ interface GrammarEntry {
   week?: string[];
   yes?: string[];
   no?: string[];
-}
-
-interface CelebrityEntry {
-  person?: string;
-  intro?: string;
 }
 
 const grammar: { [index: string]: GrammarEntry } = {
@@ -70,64 +61,6 @@ function isInputYesOrNo(utterance: string): string | null {
   }
   return "invalid";
 }
-
-function getARandomIndex(): number {
-  const index = Math.floor(Math.random() * randomQuestions.length);
-  return index;
-}
-
-
-
-
-function findBestMatchMushroom(color: string, shape: string, size: string, speciality: string, questionIndex: number): Fungus | null {
-  var fungi: Fungus[] = fungiData;
-  var bestMatchCount: number = 0;
-  var bestMatchFungus: Fungus | null = null;
-  fungi.forEach((fungus) => {
-    console.log("inside for each")
-    console.log(fungus)
-    let count: number = 0;
-    if (fungus.color.includes(color)) {
-      count++;
-      console.log("Colour")
-    }
-    if (fungus.shape.includes(shape)) {
-      count++;
-      console.log("shape")
-    }
-    if (size === "yes") {
-      if (fungus.size === "tall") {
-        count++;
-        console.log("tall")
-      }
-    } else if (size === "no") {
-      if (fungus.size === "small") {
-        count++;
-        console.log("small")
-      }
-    }
-    if (randomQuestions[questionIndex].includes(fungus.special)) {
-      count++;
-      console.log("spcecial")
-    }
-
-    if (count > bestMatchCount) {
-      console.log(count)
-      console.log(bestMatchCount)
-      bestMatchCount = count;
-      bestMatchFungus = fungus;
-    }
-  })
-  console.log("best is")
-  console.log(bestMatchFungus)
-  return bestMatchFungus
-
-}
-
-
-
-
-
 
 const dmMachine = setup({
   types: {
@@ -160,6 +93,7 @@ const dmMachine = setup({
     size: null,
     speciality: null,
     matchFungus: null,
+    randomIndex: 0,
   }),
   id: "DM",
   initial: "Prepare",
@@ -228,7 +162,7 @@ const dmMachine = setup({
       },
     },
     IntroduceRules: {
-      entry: { type: "spst.speak", params: { utterance: `Cool! Now I will tell you the rules! I know very well of six fungi! These images show how they look like. Think of one of them and I will guess which one you are thinking about! I will ask you four questions  about their appearance. If I guess correctly, I win! Otherwise I lose. After each round, you can click the image to know more about them! Think of one now and I will start my questions in five seconds!` } },
+      entry: { type: "spst.speak", params: { utterance: `Cool! Now I will tell you the rules! I know very well of six fungi! You can see their images on your screen. Think of one of them and I will guess which one you are thinking of! I will ask you four questions about them. If I guess correctly, I win! Otherwise I lose. After each round, you can click the image to know more about them! Think of one now and I will start my questions in five seconds!` } },
       on: {
         SPEAK_COMPLETE: 'Timer'
       },
@@ -400,6 +334,11 @@ const dmMachine = setup({
       },
     },
     AskSpeciality: {
+      entry:
+        assign(() => {
+          var randomIndex = getARandomIndex();
+          return { randomIndex };
+        }),
       initial: "Prompt",
       on: {
         LISTEN_COMPLETE: [
@@ -419,9 +358,7 @@ const dmMachine = setup({
       states: {
         Prompt: {
           entry: {
-            actions: assign(() => {
-              return { randomIndex: getARandomIndex() };
-            }), type: "spst.speak", params: { utterance: randomQuestions[randomIndex] }
+            type: "spst.speak", params: ({ context }) => ({ utterance: randomQuestions[context.randomIndex] }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -435,7 +372,7 @@ const dmMachine = setup({
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I cannot hear you! ${randomQuestions[randomIndex]}` },
+            params: ({ context }) => ({ utterance: `I cannot hear you! ${randomQuestions[context.randomIndex]}` }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -457,17 +394,16 @@ const dmMachine = setup({
     Guess: {
       entry:
         assign(({ context }) => {
-          const matchFungus = findBestMatchMushroom(
+          const matchFungus = findBestMatchFungus(
             context.color![0].utterance.toLowerCase(),
             context.shape![0].utterance.toLowerCase(),
             context.size![0].utterance.toLowerCase(),
             context.speciality![0].utterance.toLowerCase(),
-            randomIndex
+            context.randomIndex,
           );
 
           return { matchFungus };
         }),
-
       initial: "Prompt",
       on: {
         LISTEN_COMPLETE: [
@@ -491,18 +427,14 @@ const dmMachine = setup({
       states: {
         Prompt: {
           entry: {
-            type: "spst.speak", params: ({ context }) => ({ utterance: `Is ${context.matchFungus?.name} the one you are thinking of?` }),
+            type: "spst.speak", params: ({ context }) => ({ utterance: `I think No. ${context.matchFungus?.nr} is the one you are thinking of! ${context.matchFungus?.intro} Is my guess correct?` }),
           },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        CompleteGuessing: {
-          entry: { type: "spst.speak", params: ({ context }) => ({ utterance: `I think ${context.matchFungus?.name} is the one you are thinking of! Is it correct?` }) },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: ({ context }) => ({ utterance: `I cannot hear you! Is ${context.matchFungus?.name} the one you are thinking of!` }),
+            params: ({ context }) => ({ utterance: `I cannot hear you! Is No. ${context.matchFungus?.nr} the one you are thinking of?` }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -546,7 +478,7 @@ const dmMachine = setup({
         Prompt: {
           entry: {
             type: "spst.speak", params: {
-              utterance: `Yay! I won! Would you like to play again?`,
+              utterance: `Woohoo! I won! Would you like to play again?`,
             }
           },
           on: { SPEAK_COMPLETE: "#DM.Greeting.Ask" }

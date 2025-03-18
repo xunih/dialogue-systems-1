@@ -10,11 +10,13 @@ export interface DMContext {
   shape: Hypothesis[] | null;
   size: Hypothesis[] | null;
   speciality: Hypothesis[] | null;
-  matchFungus: Fungus| null;
+  matchFungus: Fungus | null;
+  randomIndex: number | 0;
 }
 
 export interface Fungus {
   name: string;
+  nr: number;
   color: string;
   shape: string;
   size: string;
