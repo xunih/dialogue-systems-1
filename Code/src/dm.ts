@@ -2,7 +2,9 @@ import { assign, createActor, setup } from "xstate";
 import { Settings, speechstate } from "speechstate";
 import { createBrowserInspector } from "@statelyai/inspect";
 import { KEY, NLU_KEY } from "./azure";
-import { DMContext, DMEvents } from "./types";
+import { DMContext, DMEvents, Fungus } from "./types";
+import fungiData from "./fungiData.json"
+import { Context } from "microsoft-cognitiveservices-speech-sdk/distrib/lib/src/common.speech/SpeechServiceConfig";
 
 const inspector = createBrowserInspector();
 
@@ -74,6 +76,59 @@ function getARandomIndex(): number {
   return index;
 }
 
+
+
+
+function findBestMatchMushroom(color: string, shape: string, size: string, speciality: string, questionIndex: number): Fungus | null {
+  var fungi: Fungus[] = fungiData;
+  var bestMatchCount: number = 0;
+  var bestMatchFungus: Fungus | null = null;
+  fungi.forEach((fungus) => {
+    console.log("inside for each")
+    console.log(fungus)
+    let count: number = 0;
+    if (fungus.color.includes(color)) {
+      count++;
+      console.log("Colour")
+    }
+    if (fungus.shape.includes(shape)) {
+      count++;
+      console.log("shape")
+    }
+    if (size === "yes") {
+      if (fungus.size === "tall") {
+        count++;
+        console.log("tall")
+      }
+    } else if (size === "no") {
+      if (fungus.size === "small") {
+        count++;
+        console.log("small")
+      }
+    }
+    if (randomQuestions[questionIndex].includes(fungus.special)) {
+      count++;
+      console.log("spcecial")
+    }
+
+    if (count > bestMatchCount) {
+      console.log(count)
+      console.log(bestMatchCount)
+      bestMatchCount = count;
+      bestMatchFungus = fungus;
+    }
+  })
+  console.log("best is")
+  console.log(bestMatchFungus)
+  return bestMatchFungus
+
+}
+
+
+
+
+
+
 const dmMachine = setup({
   types: {
     /** you might need to extend these */
@@ -103,6 +158,8 @@ const dmMachine = setup({
     color: null,
     shape: null,
     size: null,
+    speciality: null,
+    matchFungus: null,
   }),
   id: "DM",
   initial: "Prepare",
@@ -297,11 +354,11 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "AskSpeciality",
-            guard: ({ context }) => !!context.size && context.size[0].utterance.toLowerCase() in grammar
+            guard: ({ context }) => !!context.size && (isInputYesOrNo(context.size[0].utterance) === "yes" || isInputYesOrNo(context.size[0].utterance) === "no")
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.size && !(context.size[0].utterance.toLowerCase() in grammar)
+            guard: ({ context }) => !!context.size && isInputYesOrNo(context.size[0].utterance) === "invalid"
           },
           {
             target: ".NoInput",
@@ -310,7 +367,7 @@ const dmMachine = setup({
       },
       states: {
         Prompt: {
-          entry: { type: "spst.speak", params: { utterance: randomQuestions[getARandomIndex()] } },
+          entry: { type: "spst.speak", params: { utterance: "Does it look like a giant?" } },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         InvalidInput: {
@@ -348,11 +405,11 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "Guess",
-            guard: ({ context }) => !!context.size && context.size[0].utterance.toLowerCase() in grammar
+            guard: ({ context }) => !!context.speciality && (isInputYesOrNo(context.speciality[0].utterance) === "yes" || isInputYesOrNo(context.speciality[0].utterance) === "no"),
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.size && !(context.size[0].utterance.toLowerCase() in grammar)
+            guard: ({ context }) => !!context.size && isInputYesOrNo(context.speciality![0].utterance) === "invalid"
           },
           {
             target: ".NoInput",
@@ -378,7 +435,7 @@ const dmMachine = setup({
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I cannot hear you! Does the fungus look like a giant?` },
+            params: { utterance: `I cannot hear you! ${randomQuestions[randomIndex]}` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -387,18 +444,156 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { size: event.value };
+                return { speciality: event.value };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ size: null }),
+              actions: assign({ speciality: null }),
             },
           },
         },
       },
     },
-    Guess: {},
+    Guess: {
+      entry:
+        assign(({ context }) => {
+          const matchFungus = findBestMatchMushroom(
+            context.color![0].utterance.toLowerCase(),
+            context.shape![0].utterance.toLowerCase(),
+            context.size![0].utterance.toLowerCase(),
+            context.speciality![0].utterance.toLowerCase(),
+            randomIndex
+          );
+
+          return { matchFungus };
+        }),
+
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "Win",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+          },
+          {
+            target: "Lose",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+          },
+          {
+            target: "AskSpeciality.InvalidInput",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+          },
+          {
+            target: ".NoInput",
+          }
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: {
+            type: "spst.speak", params: ({ context }) => ({ utterance: `Is ${context.matchFungus?.name} the one you are thinking of?` }),
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        CompleteGuessing: {
+          entry: { type: "spst.speak", params: ({ context }) => ({ utterance: `I think ${context.matchFungus?.name} is the one you are thinking of! Is it correct?` }) },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: ({ context }) => ({ utterance: `I cannot hear you! Is ${context.matchFungus?.name} the one you are thinking of!` }),
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { yesOrNo: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ yesOrNo: null }),
+            },
+          },
+        },
+      },
+    },
+    Win: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "StartGameIntro",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+          },
+          {
+            target: "Done",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+          },
+          {
+            target: "AskSpeciality.InvalidInput",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+          },
+          {
+            target: ".NoInput",
+          }
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: {
+            type: "spst.speak", params: {
+              utterance: `Yay! I won! Would you like to play again?`,
+            }
+          },
+          on: { SPEAK_COMPLETE: "#DM.Greeting.Ask" }
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I cannot hear you! Would you like to play again?` },
+          },
+          on: { SPEAK_COMPLETE: "#DM.Greeting.Ask" },
+        },
+      },
+    },
+    Lose: {
+      initial: "Prompt",
+      on: {
+        LISTEN_COMPLETE: [
+          {
+            target: "StartGameIntro",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+          },
+          {
+            target: "Done",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+          },
+          {
+            target: "AskSpeciality.InvalidInput",
+            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+          },
+          {
+            target: "#DM.Win.NoInput",
+          }
+        ],
+      },
+      states: {
+        Prompt: {
+          entry: {
+            type: "spst.speak", params: {
+              utterance: `Oh no! I was wrong! I will win next time! Do you accept my challenge?`,
+            }
+          },
+          on: { SPEAK_COMPLETE: "#DM.Greeting.Ask" }
+        },
+      },
+    },
     Done: {
+      entry: { type: "spst.speak", params: { utterance: `It was fun! Hope to see you again!` } },
       on: {
         CLICK: "Greeting",
       },

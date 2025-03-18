@@ -9,6 +9,18 @@ export interface DMContext {
   color: Hypothesis[] | null;
   shape: Hypothesis[] | null;
   size: Hypothesis[] | null;
+  speciality: Hypothesis[] | null;
+  matchFungus: Fungus| null;
+}
+
+export interface Fungus {
+  name: string;
+  color: string;
+  shape: string;
+  size: string;
+  special: string;
+  image: string;
+  intro: string;
 }
 
 /*
