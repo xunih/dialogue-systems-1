@@ -5,6 +5,7 @@ import { AnyActorRef } from "xstate";
 export interface DMContext {
   spstRef: AnyActorRef;
   lastResult: Hypothesis[] | null;
+  nluValue: NLUValue | null,
   yesOrNo: Hypothesis[] | null
   color: Hypothesis[] | null;
   shape: Hypothesis[] | null;
@@ -24,6 +25,17 @@ export interface Fungus {
   image: string;
   intro: string;
 }
+
+interface NLUValue {
+  topIntent?: string;
+  entities: Entity[];
+}
+
+type Entity = {
+  category: string;
+  text: string;
+};
+
 
 /*
 interface NLUValue {

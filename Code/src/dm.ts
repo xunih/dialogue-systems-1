@@ -18,8 +18,8 @@ const azureCredentials = {
 const azureLanguageCredentials = {
   endpoint: "https://language-resource-672123.cognitiveservices.azure.com/language/:analyze-conversations?api-version=2024-11-15-preview" /** your Azure CLU prediction URL */,
   key: NLU_KEY /** reference to your Azure CLU key */,
-  deploymentName: "appointment" /** your Azure CLU deployment */,
-  projectName: "appointment" /** your Azure CLU project name */,
+  deploymentName: "project" /** your Azure CLU deployment */,
+  projectName: "project" /** your Azure CLU project name */,
 };
 
 const settings: Settings = {
@@ -87,6 +87,7 @@ const dmMachine = setup({
   context: ({ spawn }) => ({
     spstRef: spawn(speechstate, { input: settings }),
     lastResult: null,
+    nluValue: null,
     yesOrNo: null,
     color: null,
     shape: null,
@@ -111,16 +112,16 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "IntroduceRules",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+            guard: ({ context }) => !!context.nluValue && context.nluValue["topIntent"] === "NewUser",
 
           },
           {
             target: "StartGameIntro",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+            guard: ({ context }) => !!context.nluValue && context.nluValue["topIntent"] === "RetuningUser",
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+            guard: ({ context }) => !!context.nluValue && context.nluValue["topIntent"] === "None",
           },
           {
             target: ".NoInput",
@@ -151,11 +152,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { yesOrNo: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ yesOrNo: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },

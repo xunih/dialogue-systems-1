@@ -50,13 +50,13 @@
         "intro": "Xylaria polymorpha, commonly known as dead man’s fingers, is an intriguing and eerie-looking fungus that grows on decaying wood. The fruiting bodies resemble dark, skeletal fingers reaching up from the ground or wood, often in clusters. It typically has a black or dark brown appearance, with a rough texture. Found in forests or woodlands, this fungus is not edible but is fascinating due to its unusual, finger-like shape. With its unique look and haunting name, Xylaria polymorpha is a memorable and curious specimen of the fungal world."
     },
     {
-        "name": "Trametes versicolor",
+        "name": "Clathrus archeri",
         "nr": 6,
-        "color": "brown, tan, white, gray, yellow",
-        "shape": "fan circular wavy edge",
+        "color": "red, pink, white, brown",
+        "shape": "octopus, long, starfish",
         "size": "small",
-        "special": "medicine",
-        "image": "https://en.wikipedia.org/wiki/Trametes_versicolor#/media/File:Trametes_versicolor_G4_(1).JPG",
-        "intro": "Trametes versicolor, commonly known as turkey tail, is a colorful and striking fungus found on decaying wood. It gets its name from its vibrant, multicolored bands that resemble the feathers of a turkey’s tail. Apart from its beauty, turkey tail is valued for its medicinal properties, particularly its immune-boosting potential, and has been used in traditional medicine for centuries. It plays a crucial ecological role as a decomposer, helping break down organic matter in forests. Though not typically eaten, it's often used in supplements and herbal teas for its health benefits."
+        "special": "devil's finger",
+        "image": "https://en.wikipedia.org/wiki/Clathrus_archeri#/media/File:Clathrus_archeri.jpg",
+        "intro": "Clathrus archeri, commonly known as Devil’s Fingers or Octopus Stinkhorn, is a bizarre and striking fungus native to Australia and New Zealand but now found worldwide. It starts as a white or grayish 'egg' before bursting open into four to seven bright red, tentacle-like arms covered in foul-smelling spore slime. The odor, resembling rotting flesh, attracts flies that help spread its spores. Despite its eerie appearance, it is not toxic but is generally considered inedible due to its unpleasant smell and texture."
     }
 ]

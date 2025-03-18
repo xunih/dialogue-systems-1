@@ -11,39 +11,50 @@ export function findBestMatchFungus(color: string, shape: string, size: string, 
     var fungi: Fungus[] = fungiData;
     var bestMatchCount: number = 0;
     var bestMatchFungus: Fungus | null = null;
-    fungi.forEach((fungus) => {
-      console.log("inside for each")
+    for (let fungus in fungi){
       console.log(fungus)
+    }
+    fungi.forEach((fungus) => {
+      console.log("counting!!!")
       let count: number = 0;
+      console.log(fungus.name)
       if (fungus.color.includes(color)) {
         count++;
-        console.log("Colour")
+        console.log(fungus.color)
+        console.log(count)
       }
       if (fungus.shape.includes(shape)) {
         count++;
-        console.log("shape")
+        console.log(fungus.shape)
+        console.log(count)
       }
       if (size === "yes") {
         if (fungus.size === "tall") {
           count++;
-          console.log("tall")
+          console.log(fungus.size)
+          console.log(count)
         }
       } else if (size === "no") {
         if (fungus.size === "small") {
           count++;
-          console.log("small")
+          console.log(fungus.size)
+          console.log(count)
         }
       }
       if (randomQuestions[questionIndex].includes(speciality)) {
         count++;
-        console.log("spcecial")
+        console.log(fungus.special)
+        console.log(count)
       }
   
       if (count > bestMatchCount) {
+        console.log("look at me")
         console.log(count)
-        console.log(bestMatchCount)
+        
         bestMatchCount = count;
+        console.log(bestMatchCount)
         bestMatchFungus = fungus;
+        console.log(bestMatchFungus)
       }
     })
     console.log("best is")
