@@ -481,14 +481,27 @@ const dmMachine = setup({
               utterance: `Woohoo! I won! Would you like to play again?`,
             }
           },
-          on: { SPEAK_COMPLETE: "#DM.Greeting.Ask" }
+          on: { SPEAK_COMPLETE: "Ask" }
         },
         NoInput: {
           entry: {
             type: "spst.speak",
             params: { utterance: `I cannot hear you! Would you like to play again?` },
           },
-          on: { SPEAK_COMPLETE: "#DM.Greeting.Ask" },
+          on: { SPEAK_COMPLETE: "Ask" },
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { yesOrNo: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ yesOrNo: null }),
+            },
+          },
         },
       },
     },
@@ -520,7 +533,20 @@ const dmMachine = setup({
               utterance: `Oh no! I was wrong! I will win next time! Do you accept my challenge?`,
             }
           },
-          on: { SPEAK_COMPLETE: "#DM.Greeting.Ask" }
+          on: { SPEAK_COMPLETE: "Ask" }
+        },
+        Ask: {
+          entry: { type: "spst.listen" },
+          on: {
+            RECOGNISED: {
+              actions: assign(({ event }) => {
+                return { yesOrNo: event.value };
+              }),
+            },
+            ASR_NOINPUT: {
+              actions: assign({ yesOrNo: null }),
+            },
+          },
         },
       },
     },
