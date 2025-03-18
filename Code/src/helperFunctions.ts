@@ -1,6 +1,6 @@
 import { Fungus } from "./types";
 import fungiData from "./fungiData.json"
-import { randomQuestions } from "./fixedVariagbles";
+import { randomQuestions } from "./fixedVariables";
 
 export function getARandomIndex(): number {
   const index = Math.floor(Math.random() * randomQuestions.length);
