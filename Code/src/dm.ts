@@ -32,31 +32,6 @@ const settings: Settings = {
   ttsDefaultVoice: "en-US-AvaMultilingualNeural",
 };
 
-interface GrammarEntry {
-  yes?: string[];
-  no?: string[];
-}
-
-const grammar: { [index: string]: GrammarEntry } = {
-  yesOrNo: {
-    yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely", "yes please", "maybe", "probably", "I think so"],
-    no: ["no", "nah", "nope", "no way", "not at all", "uh-uh", "I don't think so", ""]
-  },
-};
-
-
-// Fuction to check if the answer to yes/no question is in the grammar 
-// and if the answer means yes or no
-function isInputYesOrNo(utterance: string): string | null {
-  if (grammar.yesOrNo.yes?.includes(utterance.toLowerCase())) {
-    return "yes";
-  }
-  else if (grammar.yesOrNo.no?.includes(utterance.toLowerCase())) {
-    return "no";
-  }
-  return "invalid";
-}
-
 const dmMachine = setup({
   types: {
     /** you might need to extend these */
@@ -82,7 +57,6 @@ const dmMachine = setup({
   context: ({ spawn }) => ({
     spstRef: spawn(speechstate, { input: settings }),
     lastResult: null,
-    yesOrNo: null,
     color: null,
     shape: null,
     size: null,

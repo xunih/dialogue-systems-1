@@ -5,7 +5,6 @@ import { AnyActorRef } from "xstate";
 export interface DMContext {
   spstRef: AnyActorRef;
   lastResult: Hypothesis[] | null;
-  yesOrNo: Hypothesis[] | null
   color: string | null;
   shape: string | null;
   size: string | null;
