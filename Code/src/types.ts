@@ -6,12 +6,13 @@ export interface DMContext {
   spstRef: AnyActorRef;
   lastResult: Hypothesis[] | null;
   yesOrNo: Hypothesis[] | null
-  color: Hypothesis[] | null;
-  shape: Hypothesis[] | null;
+  color: string | null;
+  shape: string | null;
   size: Hypothesis[] | null;
   speciality: Hypothesis[] | null;
   matchFungus: Fungus | null;
   randomIndex: number | 0;
+  nluValue: NLUValue | null,
 }
 
 export interface Fungus {
@@ -25,7 +26,7 @@ export interface Fungus {
   intro: string;
 }
 
-/*
+
 interface NLUValue {
   topIntent?: string;
   entities: Entity[];
@@ -40,6 +41,6 @@ type Entity = {
 type YesOrNo = {
   extraInformationKind: string,
   key: string
-}*/
+}
 
 export type DMEvents = SpeechStateExternalEvent | { type: "CLICK" };

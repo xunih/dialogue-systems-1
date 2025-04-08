@@ -4,7 +4,7 @@ import { createBrowserInspector } from "@statelyai/inspect";
 import { KEY, NLU_KEY } from "./azure";
 import { DMContext, DMEvents, Fungus } from "./types";
 import { Context } from "microsoft-cognitiveservices-speech-sdk/distrib/lib/src/common.speech/SpeechServiceConfig";
-import { color, randomQuestions, shape } from "./fixedVariables";
+import { randomQuestions } from "./fixedVariables";
 import { findBestMatchFungus, getARandomIndex } from "./helperFunctions";
 
 const inspector = createBrowserInspector();
@@ -18,8 +18,8 @@ const azureCredentials = {
 const azureLanguageCredentials = {
   endpoint: "https://language-resource-672123.cognitiveservices.azure.com/language/:analyze-conversations?api-version=2024-11-15-preview" /** your Azure CLU prediction URL */,
   key: NLU_KEY /** reference to your Azure CLU key */,
-  deploymentName: "appointment" /** your Azure CLU deployment */,
-  projectName: "appointment" /** your Azure CLU project name */,
+  deploymentName: "project" /** your Azure CLU deployment */,
+  projectName: "project" /** your Azure CLU project name */,
 };
 
 const settings: Settings = {
@@ -89,6 +89,7 @@ const dmMachine = setup({
     speciality: null,
     matchFungus: null,
     randomIndex: 0,
+    nluValue: null,
   }),
   id: "DM",
   initial: "Prepare",
@@ -106,19 +107,15 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "IntroduceRules",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "NewUser",
 
           },
           {
             target: "StartGameIntro",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+            guard: ({ context }) => !!context.nluValue && context.nluValue['topIntent'] === "RetuningUser"
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
-          },
-          {
-            target: ".NoInput",
           },
         ],
       },
@@ -130,14 +127,7 @@ const dmMachine = setup({
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I cannot understand what you said. Please say yes if you would like to learn more about the rules, or say no to directly start the game!` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I cannot hear you! Is this the first time you play this game?` },
+            params: { utterance: `I cannot understand what you said or you didn't say anything. Is this the first time you play this game?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -146,11 +136,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { yesOrNo: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ yesOrNo: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -179,16 +169,12 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "AskShape",
-            guard: ({ context }) => !!context.color && color.includes(context.color[0].utterance.toLowerCase()),
+            guard: ({ context }) => context.nluValue?.entities[0]?.category === "Color",
 
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.color && !color.includes(context.color[0].utterance.toLowerCase())
           },
-          {
-            target: ".NoInput",
-          }
         ],
       },
       states: {
@@ -199,14 +185,7 @@ const dmMachine = setup({
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `What you just said is not a color. What color is the fungus you are thinking of?` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I cannot hear you! What color is the fungus you are thinking of?` },
+            params: { utterance: `What you just said is not a color or you didn't say anything. What color is the fungus you are thinking of?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -215,11 +194,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { color: event.value };
+                return { nluValue: event.nluValue, color: event.nluValue?.entities[0]?.text };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ color: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -231,16 +210,12 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "AskSize",
-            guard: ({ context }) => !!context.shape && shape.includes(context.shape[0].utterance.toLowerCase()),
+            guard: ({ context }) => context.nluValue?.entities[0]?.category === "Shape",
 
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.shape && !shape.includes(context.shape[0].utterance.toLowerCase())
           },
-          {
-            target: ".NoInput",
-          }
         ],
       },
       states: {
@@ -251,14 +226,7 @@ const dmMachine = setup({
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `Not in grammar` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I cannot hear you! What kind of shape does the fungus have?` },
+            params: { utterance: `What you just said isn't valid or you didn't say anything! What kind of shape does the fungus have?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -267,11 +235,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { shape: event.value };
+                return { nluValue: event.nluValue, shape: event.nluValue?.entities[0]?.text };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ shape: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -302,14 +270,14 @@ const dmMachine = setup({
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `not in grammar.` },
+            params: { utterance: `I cannot understand what you said. Please answer yes or no!` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
         NoInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I cannot hear you! ` },
+            params: { utterance: `I cannot hear you! Does it look like a giant?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -390,8 +358,8 @@ const dmMachine = setup({
       entry:
         assign(({ context }) => {
           const matchFungus = findBestMatchFungus(
-            context.color![0].utterance.toLowerCase(),
-            context.shape![0].utterance.toLowerCase(),
+            context.color!.toLowerCase(),
+            context.shape!.toLowerCase(),
             context.size![0].utterance.toLowerCase(),
             context.speciality![0].utterance.toLowerCase(),
             context.randomIndex,
