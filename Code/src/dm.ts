@@ -466,7 +466,7 @@ const dmMachine = setup({
             guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
           },
           {
-            target: "AskSpeciality.InvalidInput",
+            target: ".NoInput",
             guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
           },
           {

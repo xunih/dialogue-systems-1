@@ -2,11 +2,11 @@
     {
         "name": "Morchella elata",
         "nr": 1,
-        "color": "dark brown to dark grey, sometimes almost black",
+        "color": "dark brown to dark gray, sometimes almost black",
         "shape": "egg-shaped cap",
         "size": "medium",
         "special": "honeycomb-like, edible",
-        "image": "https://en.wikipedia.org/wiki/Morchella_elata#/media/File:Morchella_elata_Spitzmorchel_Morchella_conica.jpg",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Morchella_elata_Spitzmorchel_Morchella_conica.jpg/1280px-Morchella_elata_Spitzmorchel_Morchella_conica.jpg",
         "intro": "Morchella elata, commonly known as the black morel, is a highly sought-after edible mushroom. It has a distinctive appearance with a honeycomb-like cap and a tall, slender stem. The cap is usually dark, ranging from brown to black, with deep pits and ridges. Black morels are seasonal fungi, typically appearing in spring, particularly in wooded areas, near streams, or in burnt forests. They thrive in moist, nutrient-rich soils and are known for their rich, earthy flavor and meaty texture, making them a favorite among chefs and mushroom hunters. When cooked, they offer a savory, nutty taste that's perfect for a variety of dishes."
     },
     {
@@ -16,7 +16,7 @@
         "shape": "shaggy, white cap, egg, bell, melting ice cream",
         "size": "tall",
         "special": "self-digestion",
-        "image": "https://en.wikipedia.org/wiki/Coprinus_comatus#/media/File:Coprinus_comatus,_the_shaggy_ink_cap,_lawyer's_wig,_or_shaggy_mane_mushroom.jpg",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/6/66/Coprinus_comatus%2C_the_shaggy_ink_cap%2C_lawyer%27s_wig%2C_or_shaggy_mane_mushroom.jpg",
         "intro": "Coprinus comatus, commonly known as the shaggy ink cap or lawyer’s wig, is a unique and fascinating mushroom known for its distinctive shaggy, white cap that looks like a messy hairstyle. This mushroom is edible when young and has a delicate, mild flavor, often used in cooking. One of its most remarkable features is its process of deliquescence, where the cap dissolves into a black ink-like liquid as it matures. Found in grassy areas or lawns, it grows quickly, sometimes overnight. Apart from being edible, it's also of interest for its potential medicinal properties and has been historically used in ink-making."
     },
     {
@@ -26,7 +26,7 @@
         "shape": "fan",
         "size": "small",
         "special": "bioluminescence, glow in the dark",
-        "image": "https://en.wikipedia.org/wiki/Panellus_stipticus#/media/File:Panellus_stipticus_(37162668243).jpg",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Panellus_stipticus_%2837162668243%29.jpg/1920px-Panellus_stipticus_%2837162668243%29.jpg",
         "intro": "Panellus stipticus, also known as the bitter panus or luminescent panus, is a small, bioluminescent mushroom famous for its ability to glow in the dark with a faint, greenish light. It typically grows on decaying wood, especially in forests, and has a fan-shaped cap that ranges from yellowish to orange-brown in color. The mushroom’s stem is short and off-center. Aside from its unique glow, Panellus stipticus is known for its bitter taste and has been of interest in both natural studies and historical uses. It’s a cool example of how nature can light up the forest at night!"
     },
     {
@@ -36,7 +36,7 @@
         "shape": "umbrella convex or bell shape",
         "size": "medium",
         "special": "toxic",
-        "image": "https://en.wikipedia.org/wiki/Amanita_muscaria#/media/File:Amanita_muscaria_3_vliegenzwammen_op_rij.jpg",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Amanita_muscaria_3_vliegenzwammen_op_rij.jpg/1920px-Amanita_muscaria_3_vliegenzwammen_op_rij.jpg",
         "intro": "Amanita muscaria, commonly known as the fly agaric, is a striking and iconic mushroom with a bright red cap dotted with white spots. It is widely recognized in folklore and fairy tales due to its vivid appearance. This mushroom is hallucinogenic and contains compounds like muscarine and ibotenic acid, which can cause psychoactive effects when consumed. Though it is famous for its magical qualities in mythology, it is also toxic and can cause serious symptoms if ingested. Despite its beauty, Amanita muscaria should never be consumed without proper knowledge, as it can be dangerous."
     },
     {
@@ -56,7 +56,7 @@
         "shape": "fan circular wavy edge",
         "size": "small",
         "special": "medicine",
-        "image": "https://en.wikipedia.org/wiki/Trametes_versicolor#/media/File:Trametes_versicolor_G4_(1).JPG",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Trametes_versicolor_G4_%281%29.JPG/1920px-Trametes_versicolor_G4_%281%29.JPG",
         "intro": "Trametes versicolor, commonly known as turkey tail, is a colorful and striking fungus found on decaying wood. It gets its name from its vibrant, multicolored bands that resemble the feathers of a turkey’s tail. Apart from its beauty, turkey tail is valued for its medicinal properties, particularly its immune-boosting potential, and has been used in traditional medicine for centuries. It plays a crucial ecological role as a decomposer, helping break down organic matter in forests. Though not typically eaten, it's often used in supplements and herbal teas for its health benefits."
     }
 ]
