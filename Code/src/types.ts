@@ -8,8 +8,8 @@ export interface DMContext {
   yesOrNo: Hypothesis[] | null
   color: string | null;
   shape: string | null;
-  size: Hypothesis[] | null;
-  speciality: Hypothesis[] | null;
+  size: string | null;
+  speciality: string | null;
   matchFungus: Fungus | null;
   randomIndex: number | 0;
   nluValue: NLUValue | null,

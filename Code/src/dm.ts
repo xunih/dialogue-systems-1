@@ -39,8 +39,8 @@ interface GrammarEntry {
 
 const grammar: { [index: string]: GrammarEntry } = {
   yesOrNo: {
-    yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely", "yes please"],
-    no: ["no", "nah", "nope", "no way", "not at all", "uh-uh"]
+    yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely", "yes please", "maybe", "probably", "I think so"],
+    no: ["no", "nah", "nope", "no way", "not at all", "uh-uh", "I don't think so", ""]
   },
 };
 
@@ -251,15 +251,11 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "AskSpeciality",
-            guard: ({ context }) => !!context.size && (isInputYesOrNo(context.size[0].utterance) === "yes" || isInputYesOrNo(context.size[0].utterance) === "no")
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes" || context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.size && isInputYesOrNo(context.size[0].utterance) === "invalid"
           },
-          {
-            target: ".NoInput",
-          }
         ],
       },
       states: {
@@ -270,14 +266,7 @@ const dmMachine = setup({
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I cannot understand what you said. Please answer yes or no!` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: { utterance: `I cannot hear you! Does it look like a giant?` },
+            params: { utterance: `I cannot understand what you said or you didn't say anything. Please answer yes or no!` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -286,11 +275,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { size: event.value };
+                return { nluValue: event.nluValue, size: event.nluValue.entities[0]?.extraInformation[0]?.key };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ size: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -307,15 +296,11 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "Guess",
-            guard: ({ context }) => !!context.speciality && (isInputYesOrNo(context.speciality[0].utterance) === "yes" || isInputYesOrNo(context.speciality[0].utterance) === "no"),
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes" || context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
           },
           {
             target: ".InvalidInput",
-            guard: ({ context }) => !!context.size && isInputYesOrNo(context.speciality![0].utterance) === "invalid"
           },
-          {
-            target: ".NoInput",
-          }
         ],
       },
       states: {
@@ -328,14 +313,7 @@ const dmMachine = setup({
         InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I can't understand what you said. Please answer yes or no.` },
-          },
-          on: { SPEAK_COMPLETE: "Ask" },
-        },
-        NoInput: {
-          entry: {
-            type: "spst.speak",
-            params: ({ context }) => ({ utterance: `I cannot hear you! ${randomQuestions[context.randomIndex]}` }),
+            params: { utterance: `I can't understand what you said or you didn't say anything. Please answer yes or no.` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -344,11 +322,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { speciality: event.value };
+                return { nluValue: event.nluValue, speciality: event.nluValue.entities[0]?.extraInformation[0]?.key };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ speciality: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -360,8 +338,8 @@ const dmMachine = setup({
           const matchFungus = findBestMatchFungus(
             context.color!.toLowerCase(),
             context.shape!.toLowerCase(),
-            context.size![0].utterance.toLowerCase(),
-            context.speciality![0].utterance.toLowerCase(),
+            context.size!.toLowerCase(),
+            context.speciality!.toLowerCase(),
             context.randomIndex,
           );
 
@@ -372,19 +350,15 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "Win",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
           },
           {
             target: "Lose",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
           },
           {
-            target: "AskSpeciality.InvalidInput",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+            target: ".InvalidInput",
           },
-          {
-            target: ".NoInput",
-          }
         ],
       },
       states: {
@@ -394,10 +368,10 @@ const dmMachine = setup({
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
-        NoInput: {
+        InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: ({ context }) => ({ utterance: `I cannot hear you! Is No. ${context.matchFungus?.nr} the one you are thinking of?` }),
+            params: ({ context }) => ({ utterance: `I cannot understand you or you didn't say anything! Is No. ${context.matchFungus?.nr} the one you are thinking of?` }),
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -406,11 +380,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { yesOrNo: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ yesOrNo: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -422,19 +396,15 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "StartGameIntro",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
           },
           {
             target: "Done",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
           },
           {
-            target: ".NoInput",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+            target: ".InvalidInput",
           },
-          {
-            target: ".NoInput",
-          }
         ],
       },
       states: {
@@ -446,10 +416,10 @@ const dmMachine = setup({
           },
           on: { SPEAK_COMPLETE: "Ask" }
         },
-        NoInput: {
+        InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I cannot hear you! Would you like to play again?` },
+            params: { utterance: `I cannot understand you or you didn't say anything! Would you like to play again?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
@@ -458,11 +428,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { yesOrNo: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ yesOrNo: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
@@ -474,15 +444,14 @@ const dmMachine = setup({
         LISTEN_COMPLETE: [
           {
             target: "StartGameIntro",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "yes",
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "yes",
           },
           {
             target: "Done",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
+            guard: ({ context }) => context.nluValue?.entities[0]?.extraInformation[0]?.key === "no",
           },
           {
-            target: ".NoInput",
-            guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
+            target: ".InvalidInput",
           },
         ],
       },
@@ -500,18 +469,18 @@ const dmMachine = setup({
           on: {
             RECOGNISED: {
               actions: assign(({ event }) => {
-                return { yesOrNo: event.value };
+                return { nluValue: event.nluValue };
               }),
             },
             ASR_NOINPUT: {
-              actions: assign({ yesOrNo: null }),
+              actions: assign({ nluValue: null }),
             },
           },
         },
-        NoInput: {
+        InvalidInput: {
           entry: {
             type: "spst.speak",
-            params: { utterance: `I cannot hear you! Would you like to play again?` },
+            params: { utterance: `I cannot understand you or you didn't say anything! Would you like to play again?` },
           },
           on: { SPEAK_COMPLETE: "Ask" },
         },
