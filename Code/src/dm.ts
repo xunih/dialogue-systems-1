@@ -33,22 +33,17 @@ const settings: Settings = {
 };
 
 interface GrammarEntry {
-  person?: string;
-  //day?: string;
-  //Added more entries in to the grammar
-  names?: string[];
-  time?: string;
-  week?: string[];
   yes?: string[];
   no?: string[];
 }
 
 const grammar: { [index: string]: GrammarEntry } = {
   yesOrNo: {
-    yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely"],
+    yes: ["yes", "yeah", "yep", "yup", "sure", "of course", "definitely", "absolutely", "yes please"],
     no: ["no", "nah", "nope", "no way", "not at all", "uh-uh"]
   },
 };
+
 
 // Fuction to check if the answer to yes/no question is in the grammar 
 // and if the answer means yes or no
@@ -162,7 +157,7 @@ const dmMachine = setup({
       },
     },
     IntroduceRules: {
-      entry: { type: "spst.speak", params: { utterance: `Cool! Now I will tell you the rules! I know very well of six fungi! You can see their images on your screen. Think of one of them and I will guess which one you are thinking of! I will ask you four questions about them. If I guess correctly, I win! Otherwise I lose. After each round, you can click the image to know more about them! Think of one now and I will start my questions in five seconds!` } },
+      entry: { type: "spst.speak", params: { utterance: `Cool! Now I will tell you the rules! I know very well of six fungi! You can see their images on your screen. Think of one of them and I will guess which one you are thinking of! I will ask you some questions about them. If I guess correctly, I win! Otherwise I lose. After each round, you can click the image to know more about them! Think of one now and I will start my questions in five seconds!` } },
       on: {
         SPEAK_COMPLETE: 'Timer'
       },
@@ -518,12 +513,9 @@ const dmMachine = setup({
             guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "no",
           },
           {
-            target: "AskSpeciality.InvalidInput",
+            target: ".NoInput",
             guard: ({ context }) => !!context.yesOrNo && isInputYesOrNo(context.yesOrNo[0].utterance) === "invalid",
           },
-          {
-            target: "#DM.Win.NoInput",
-          }
         ],
       },
       states: {
@@ -547,6 +539,13 @@ const dmMachine = setup({
               actions: assign({ yesOrNo: null }),
             },
           },
+        },
+        NoInput: {
+          entry: {
+            type: "spst.speak",
+            params: { utterance: `I cannot hear you! Would you like to play again?` },
+          },
+          on: { SPEAK_COMPLETE: "Ask" },
         },
       },
     },
