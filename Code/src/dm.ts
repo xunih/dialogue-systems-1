@@ -261,8 +261,11 @@ const dmMachine = setup({
     },
     AskSpeciality: {
       entry:
-        assign(() => {
+        assign(({ context }) => {
           var randomIndex = getARandomIndex();
+          if (context.shape?.includes('finger')) {
+            randomIndex = 2
+          }
           return { randomIndex };
         }),
       initial: "Prompt",

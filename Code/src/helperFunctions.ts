@@ -8,20 +8,24 @@ export function getARandomIndex(): number {
 }
 
 export function findBestMatchFungus(color: string, shape: string, size: string, speciality: string, questionIndex: number): Fungus | null {
-    var fungi: Fungus[] = fungiData;
-    var bestMatchCount: number = 0;
-    var bestMatchFungus: Fungus | null = null;
+  var fungi: Fungus[] = fungiData;
+  var bestMatchCount: number = 0;
+  var bestMatchFungus: Fungus | null = null;
+  if (color === "red") {
+    bestMatchFungus = fungi[3]
+  } else if (shape.includes("finger")) {
+    bestMatchFungus = fungi[4]
+  } else {
     fungi.forEach((fungus) => {
       console.log("inside for each")
       console.log(fungus)
       let count: number = 0;
+
       if (fungus.color.includes(color)) {
         count++;
-        console.log("Colour")
       }
       if (fungus.shape.includes(shape)) {
         count++;
-        console.log("shape")
       }
       if (size === "yes") {
         if (fungus.size === "tall") {
@@ -31,22 +35,17 @@ export function findBestMatchFungus(color: string, shape: string, size: string, 
       } else if (size === "no") {
         if (fungus.size === "small") {
           count++;
-          console.log("small")
         }
       }
       if (randomQuestions[questionIndex].includes(speciality)) {
         count++;
-        console.log("spcecial")
       }
-  
+
       if (count > bestMatchCount) {
-        console.log(count)
-        console.log(bestMatchCount)
         bestMatchCount = count;
         bestMatchFungus = fungus;
       }
     })
-    console.log("best is")
-    console.log(bestMatchFungus)
-    return bestMatchFungus
   }
+  return bestMatchFungus
+}
