@@ -1,11 +1,12 @@
 import { assign, createActor, setup } from "xstate";
 import { Settings, speechstate } from "speechstate";
 import { createBrowserInspector } from "@statelyai/inspect";
-import { KEY, NLU_KEY } from "./azure";
 import { DMContext, DMEvents, Fungus } from "./types";
 import { Context } from "microsoft-cognitiveservices-speech-sdk/distrib/lib/src/common.speech/SpeechServiceConfig";
 import { randomQuestions } from "./fixedVariables";
 import { findBestMatchFungus, getARandomIndex } from "./helperFunctions";
+const KEY = import.meta.env.VITE_KEY
+const NLU_KEY = import.meta.env.VITE_NLU_KEY
 
 const inspector = createBrowserInspector();
 
